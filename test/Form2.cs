@@ -41,8 +41,7 @@ namespace test
         {
             string str = textBox1.Text;
             opLevel.Clear();
-            calculate1.Clear();
-            calculate2.Clear();
+            calculate.Clear();
             output.Clear();
             if (Detection(str) != true)
             {
@@ -61,8 +60,8 @@ namespace test
         {
             string str = textBox1.Text;
             opLevel.Clear();
-            calculate1.Clear();
-            calculate2.Clear();
+            calculate.Clear();
+     
             output.Clear();
             if (Detection(str) != true)
             {
@@ -154,16 +153,18 @@ namespace test
         }
         List<char> output = new List<char>();
         Stack<char> opLevel = new Stack<char>();
-        Stack<char> calculate1 = new Stack<char>();
-        Stack<cell> calculate2 = new Stack<cell>();
+        //Stack<char> calculate1 = new Stack<char>();
+        Stack<cell> calculate = new Stack<cell>();
 
 
         cell NFA = new cell();
         cell DFA = new cell();
-        List<edge> aEdge = new List<edge>();
-        List<edge> bEdge = new List<edge>();
+        //List<edge> aEdge = new List<edge>();
+        //List<edge> bEdge = new List<edge>();
         int NFAb = 0;
         int NFAe = 0;
+        int DFAb = 0;
+        int DFAe = 0;
         //class GolbalPara
         //{
         //    public static int stateName = 0;
@@ -186,7 +187,7 @@ namespace test
         {
            
             List<char> chList = new List<char>();
-            int nums = 0;
+            
 
             for(int i = 0; i < ch.Length; i++)
             {
@@ -217,89 +218,22 @@ namespace test
                 }
                 else if (chList[i] == 'a' && i != 0)
                 {
-                    if (chList[i - 1] == 'a' || chList[i - 1] == 'b' )
+                    if (chList[i - 1] == 'a' || chList[i - 1] == 'b' || chList[i - 1] == ')' || chList[i - 1] == '*')
                     {
-                        if (i != chList.Count - 1)//不为最后一位时判断插入符号
-                        {
-                            if (chList[i + 1] == '*')//当后一位是闭包时，应该插入'+'
-                            {
-                                chList.Insert(i, '+');
-                                i++;
-                            }
-                            else if (i - 2 >= 0 && (chList[i - 1] != '(' && chList[i - 2] == '-') && chList[i + 1] != '*') //如果前一个a，b插入的运算符(不含括号闭包)为'-'那么后面a，b插入的符号都为'-'
-                            {
-                                chList.Insert(i, '-');
-                                i++;
-                            }
-                            else if (i - 2 >= 0 && (chList[i - 1] != '(' && chList[i - 2] == '+') && chList[i + 1] != '*')//如果前一个a，b插入的运算符为'＋'则
-                            {
-
-                                chList.Insert(i, '-');
-                                i++;
-
-
-                            }
-                            else//如果是第一次运算应该插入'+'，'('会重置到第一次
-                            {
-                                chList.Insert(i, '+');
-                                i++;
-                            }
-                        }
-                        else//处在最后一位的a，b应该插入'-'
-                        {
-                            chList.Insert(i, '-');
-                            i++;
-                        }
-
-                    }
-                    else if (chList[i - 1] == ')' || chList[i - 1] == '*')//当a，b的前面有带括号和闭包的运算时直接插入'-'
-                    {
-                        chList.Insert(i, '-');
+                        chList.Insert(i, '+');
                         i++;
+
                     }
                 }
                 else if (chList[i] == 'b' && i != 0)
                 {
-                    if (chList[i - 1] == 'a' || chList[i - 1] == 'b' )
+                    if (chList[i - 1] == 'a' || chList[i - 1] == 'b' || chList[i - 1] == ')' || chList[i - 1] == '*')
                     {
-                        if (i != chList.Count - 1)//不为最后一位时判断插入符号
-                        {
-                            if (chList[i + 1] == '*')//当后一位是闭包时，应该插入'+'
-                            {
-                                chList.Insert(i, '+');
-                                i++;
-                            }
-                            else if (i - 2 >= 0 && (chList[i - 1] != '(' && chList[i - 2] == '-') && chList[i + 1] != '*') //如果前一个a，b插入的运算符(不含括号闭包)为'-'那么后面a，b插入的符号都为'-'
-                            {
-                                chList.Insert(i, '-');
-                                i++;
-                            }
-                            else if (i - 2 >= 0 && (chList[i - 1] != '(' && chList[i - 2] == '+') && chList[i + 1] != '*')//如果前一个a，b插入的运算符为'＋'则
-                            {
-                               
-                                    chList.Insert(i, '-');
-                                    i++;
-                         
-
-                            }
-                            else//如果是第一次运算应该插入'+'
-                            {
-                                chList.Insert(i, '+');
-                                i++;
-                            }
-                        }
-                        else//处在最后一位的a，b应该插入'-'
-                        {
-                            chList.Insert(i, '-');
-                            i++;
-                        }
-
-                    }
-                    else if (chList[i - 1] == ')' || chList[i - 1] == '*')//当a，b的前面有带括号和闭包的运算时直接插入'-'
-                    {
-                        chList.Insert(i, '-');
+                        chList.Insert(i, '+');
                         i++;
+
                     }
+   
                 }
             }
             
@@ -309,8 +243,8 @@ namespace test
             FrontToBack(newch);
             Calculation();
 
-            NFA = calculate2.Peek();
-            cell result = calculate2.Pop();
+            NFA = calculate.Peek();
+            cell result = calculate.Pop();
             string output = null;
             output = output + "开始状态    接受符号    到达状态\n";
             for (int i = 0; i < result.EdgeCount; i++)
@@ -335,56 +269,37 @@ namespace test
             NormalToNFA(ch);
             CloseSet C = new CloseSet();
             TSet T0 = new TSet();
-            T0.tSet.Add(NFAb);
-          
-            for (int i = 0; i < NFA.EdgeSet.Count; i++)
-            {
-                if (NFA.EdgeSet[i].TransSymbol == '#')
-                {
-                    T0.tSet.Add(NFA.EdgeSet[i].EndState.StateName);
-                }
-            }
-            T0.Unrepeated();
+            //T0.tSet.Add(NFAb);
+            List<int> t = new List<int>();
+            t.Add(NFAb);
+            T0 = E_Closure(t);
+
+            T0.tSet.Sort();
+            //T0.Unrepeated();
             C.CSet.Add(T0);
             
-            for(int i = 0; i < NFA.EdgeSet.Count; i++)
-            {
-                if (NFA.EdgeSet[i].TransSymbol == 'a')
-                {
-                    aEdge.Add(NFA.EdgeSet[i]);
-                }
-                if (NFA.EdgeSet[i].TransSymbol == 'b')
-                {
-                    bEdge.Add(NFA.EdgeSet[i]);
-                }
-            }
+
 
             while (C.Check() != true)
             {
                 int order = C.Sign();
                 TSet Ta = new TSet();
                 TSet Tb = new TSet();
-                Ta.tSet.AddRange(C.CSet[order].tSet);
-                Tb.tSet.AddRange(C.CSet[order].tSet);
-                for(int i = 0; i < C.CSet[order].tSet.Count; i++)
+                TSet T = new TSet();
+
+                for (int i = 0; i < C.CSet[order].tSet.Count; i++)
                 {
-                    for(int j = 0; j < aEdge.Count; j++)
-                    {
-                        if (C.CSet[order].tSet[i] == aEdge[j].StartState.StateName)
-                        {
-                            Ta.tSet.Add(aEdge[j].EndState.StateName);
-                        }
-                        if (C.CSet[order].tSet[i] == bEdge[j].StartState.StateName)
-                        {
-                            Tb.tSet.Add(aEdge[j].EndState.StateName);
-                        }
-                    }
-                    
+                    T.tSet.Add(C.CSet[order].tSet[i]);
                 }
+                Ta = E_Closure(Move(T,'a'));
+                Tb = E_Closure(Move(T,'b'));
+                Ta.tSet.Sort();
+                Tb.tSet.Sort();
+                //Ta.Unrepeated();
+                //Tb.Unrepeated();
 
                 if (C.JoinNew(Ta) == -1)
-                {
-                    Ta.Unrepeated();
+                {   
                     C.CSet.Add(Ta);
                     C.CSet[order].anext = C.CSet.Count-1;
                 }
@@ -392,10 +307,9 @@ namespace test
                 {
                     C.CSet[order].anext = C.JoinNew(Ta);
                 }
-
                 if (C.JoinNew(Tb) == -1)
                 {
-                    Tb.Unrepeated();
+                    
                     C.CSet.Add(Tb);
                     C.CSet[order].bnext = C.CSet.Count - 1;
                 }
@@ -406,23 +320,117 @@ namespace test
 
             }
 
+            DFA = MakeDFAcell(C);
 
+            cell result = DFA;
+            string output = null;
+            output = output + "开始状态    接受符号    到达状态\n";
+            for (int i = 0; i < result.EdgeCount; i++)
+            {
+                string s = String.Format("{0,-12}{1,-12}{2,-12}\n", result.EdgeSet[i].StartState.StateName, result.EdgeSet[i].TransSymbol, result.EdgeSet[i].EndState.StateName);
+                output = output + s;
+
+            }
+
+            richTextBox2.Text = output;
+
+            DFAb = DFA.StartState.StateName;
+            DFAe = DFA.EndState.StateName;
+            textBox4.Text = DFAb.ToString();
+            textBox5.Text = DFAe.ToString();
         }
 
         private void DFAToMFA(char[] ch)
         {
 
         }
+        /*-------------------------------------------------------NFA转DFA----------------------------------------------------------*/
+
+
+        private List<int> Move(TSet T,char ch)//move状态集
+        {
+            List<int> move = new List<int>();
+            for(int i = 0; i < T.tSet.Count; i++)
+            {
+                for(int j = 0; j < NFA.EdgeSet.Count; j++)
+                {
+                    if (NFA.EdgeSet[j].TransSymbol == ch && NFA.EdgeSet[j].StartState.StateName == T.tSet[i])
+                    {
+                        move.Add(NFA.EdgeSet[j].EndState.StateName);
+                    }
+                }
+            }
+            return move;
+        }
+
+        private TSet E_Closure(List<int> move)//e-closure状态集
+        {
+
+            TSet e = new TSet();
+            e.tSet.AddRange(move);
+            List<int> redis = new List<int>();
+            redis.AddRange(move);//上次遍历到的状态集合
+            while (true)//广度优先搜索
+            {
+                int lastCount = e.tSet.Count;
+                List<int> redis_c = new List<int>();//这次遍历到的状态集合
+                for (int i = 0; i < NFA.EdgeSet.Count; i++)
+                {
+                    //判断是否符合条件
+                    if (NFA.EdgeSet[i].TransSymbol == '#' && redis.Contains(NFA.EdgeSet[i].StartState.StateName) && !redis.Contains(NFA.EdgeSet[i].EndState.StateName))
+                    {
+                        redis_c.Add(NFA.EdgeSet[i].EndState.StateName);
+                    }
+                }
+                redis = redis_c;//用于下次循环
+                e.tSet.AddRange(redis);//把新发现的节点加入到e-closure状态集中
+                if (lastCount == e.tSet.Count)//如果本次遍历没有增加值，那么跳出while
+                {
+                    break;
+                }
+            }
+            return e;
+        }
+
+        private cell MakeDFAcell(CloseSet C)
+        {
+            cell c = new cell();
+            for(int i = 0; i < C.CSet.Count; i++)
+            {
+                edge e = new edge();
+                e.StartState.StateName = i;
+                e.TransSymbol = 'a';
+                e.EndState.StateName = C.CSet[i].anext;
+                c.EdgeSet.Add(e);
+            }
+
+            for (int i = 0; i < C.CSet.Count; i++)
+            {
+                edge e = new edge();
+                e.StartState.StateName = i;
+                e.TransSymbol = 'b';
+                e.EndState.StateName = C.CSet[i].bnext;
+                c.EdgeSet.Add(e);
+            }
+
+            c.StartState.StateName = 0;
+            c.EndState.StateName = C.CSet.Count - 1;
+            c.EdgeCount = c.EdgeSet.Count;
+            return c;
+        }
+
+        /*-------------------------------------------------------正规式转NFA----------------------------------------------------------*/
+
+
         /*
-         * 运算符优先级
-         * 1 (
-         * 2 |
-         * 3 + -
-         * 4 *
-         * 5 )
-         * 
-         */
-       
+        * 运算符优先级
+        * 1 (
+        * 2 |
+        * 3 + -
+        * 4 *
+        * 5 )
+        * 
+        */
         private int getLevel(char c)//获得优先级的函数
         {
             if (c == '(')
@@ -449,7 +457,7 @@ namespace test
             {
                 return 0;
             }
-            return 0;
+      
         }
         private int compareLevel(char x,char y)//比较优先级函数
         {
@@ -529,81 +537,52 @@ namespace test
             {
                 if (output[i] == '+')
                 {
-                    char symbol;
+                    
                     List<cell> para = new List<cell>();
                     for(int j = 0; j < 2; j++)
                     {
-                        if (calculate2.Count != 0)
-                        { 
-                            para.Add(calculate2.Pop());//优先查看计算过的Cell
-                        }
-                        else
-                        {
-                            symbol=calculate1.Pop();
-                            para.Add(MakeCell(symbol));
-                           
-                        }
-                        
+                    
+                            para.Add(calculate.Pop());//优先查看计算过的Cell
+                    
                     }
-                    calculate2.Push(PLUS(para[1], para[0]));//左->右
+                    calculate.Push(PLUS(para[1], para[0]));//左->右
                 }
-                else if (output[i] == '-')
-                {
-                    char symbol;
-                    List<cell> para = new List<cell>();
-                    for (int j = 0; j < 2; j++)
-                    {
-                        if (calculate2.Count != 0)
-                        { 
-                            para.Add(calculate2.Pop());//优先查看计算过的Cell
-                        }
-                        else
-                        {
-                            symbol = calculate1.Pop();
-                            para.Add(MakeCell(symbol));
-                           
-                        }
+                //else if (output[i] == '-')
+                //{
+                //    char symbol;
+                //    List<cell> para = new List<cell>();
+                //    for (int j = 0; j < 2; j++)
+                //    {
+                //            para.Add(calculate.Pop());//优先查看计算过的Cell
+                      
 
-                    }
-                    calculate2.Push(PLUS(para[0], para[1]));//右->左
-                }
+                //    }
+                //    calculate.Push(PLUS(para[0], para[1]));//右->左
+                //}
                 else if(output[i] == '|')
                 {
-                    char symbol;
+                   
                     List<cell> para = new List<cell>();
                     for (int j = 0; j < 2; j++)
                     {
-                        if (calculate1.Count != 0)
-                        {
-                            symbol = calculate1.Pop();
-                            para.Add(MakeCell(symbol));
-                        }
-                        else
-                        {
-                            para.Add(calculate2.Pop());
-                        }
+                      
+                            para.Add(calculate.Pop());
+                      
 
                     }
-                    calculate2.Push(OR(para[0], para[1]));
+                    calculate.Push(OR(para[0], para[1]));
                 }
                 else if(output[i] == '*')
                 {
-                    char symbol;
+                   
                     List<cell> para = new List<cell>();
-                    if (calculate1.Count != 0)
-                    {
-                        symbol = calculate1.Pop();
-                        para.Add(MakeCell(symbol));
-                    }
-                    else
-                    {
-                        para.Add(calculate2.Pop());
-                    }
-                    calculate2.Push(CLOSURE(para[0]));
+                  
+                    para.Add(calculate.Pop());
+                    calculate.Push(CLOSURE(para[0]));
                 }
                 else
                 {
-                    calculate1.Push(output[i]);
+                    calculate.Push(MakeCell(output[i]));
                 }
             }
         }
@@ -766,6 +745,9 @@ namespace test
         
     }
 
+
+    /*-------------------------------------------------------类定义----------------------------------------------------------*/
+
     //NFA的节点，定义成结构体，便于以后扩展
     class state
     {
@@ -795,6 +777,7 @@ namespace test
     class CloseSet
     {
         public List<TSet> CSet = new List<TSet>();
+
         public bool Check()//检查标记情况
         {
             for(int i = 0; i < CSet.Count; i++)
@@ -824,7 +807,23 @@ namespace test
         {
             for(int i = 0; i < CSet.Count; i++)
             {
-                if (CSet[i].Equals(T) == true)
+                //if (CSet[i].tSet.Equals(T) == true)
+                //{
+                //    return i;
+                //}
+                int j;
+                for(j = 0; j < CSet[i].tSet.Count; j++)
+                {
+                    if (CSet[i].tSet.Count!=T.tSet.Count)
+                    {
+                        break;
+                    }
+                    else if(T.tSet[j] != CSet[i].tSet[j])
+                    {
+                        break;
+                    }
+                }
+                if (j == CSet[i].tSet.Count)
                 {
                     return i;
                 }
@@ -840,30 +839,30 @@ namespace test
         public int bnext;
         public int anext;
 
-        public void Unrepeated()//去除子集中重复的项
-        {
+        //public void Unrepeated()//去除子集中重复的项
+        //{
 
-            int count = tSet.Count;
+        //    int count = tSet.Count;
 
-            int time = 0;
+        //    int time = 0;
 
-            count = tSet.Count;
-            for (int i = 0; i < count; i++)
-            {
-                for (int j = i + 1; j < count; j++)
-                {
-                    time++;
-                    if (tSet[i] == tSet[j])
-                    {
-                        tSet.RemoveAt(i);
-                        count = tSet.Count;
-                        i--;
-                        break;
-                    }
+        //    count = tSet.Count;
+        //    for (int i = 0; i < count; i++)
+        //    {
+        //        for (int j = i + 1; j < count; j++)
+        //        {
+        //            time++;
+        //            if (tSet[i] == tSet[j])
+        //            {
+        //                tSet.RemoveAt(i);
+        //                count = tSet.Count;
+        //                i--;
+        //                break;
+        //            }
 
-                }
-            }
+        //        }
+        //    }
        
-        }
+        //}
     }
 }
