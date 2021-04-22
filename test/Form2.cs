@@ -41,8 +41,7 @@ namespace test
         {
             string str = textBox1.Text;
             opLevel.Clear();
-            calculate1.Clear();
-            calculate2.Clear();
+            calculate.Clear();
             output.Clear();
             if (Detection(str) != true)
             {
@@ -61,8 +60,8 @@ namespace test
         {
             string str = textBox1.Text;
             opLevel.Clear();
-            calculate1.Clear();
-            calculate2.Clear();
+            calculate.Clear();
+     
             output.Clear();
             if (Detection(str) != true)
             {
@@ -154,8 +153,8 @@ namespace test
         }
         List<char> output = new List<char>();
         Stack<char> opLevel = new Stack<char>();
-        Stack<char> calculate1 = new Stack<char>();
-        Stack<cell> calculate2 = new Stack<cell>();
+        //Stack<char> calculate1 = new Stack<char>();
+        Stack<cell> calculate = new Stack<cell>();
 
 
         cell NFA = new cell();
@@ -217,89 +216,22 @@ namespace test
                 }
                 else if (chList[i] == 'a' && i != 0)
                 {
-                    if (chList[i - 1] == 'a' || chList[i - 1] == 'b' )
+                    if (chList[i - 1] == 'a' || chList[i - 1] == 'b' || chList[i - 1] == ')' || chList[i - 1] == '*')
                     {
-                        if (i != chList.Count - 1)//不为最后一位时判断插入符号
-                        {
-                            if (chList[i + 1] == '*')//当后一位是闭包时，应该插入'+'
-                            {
-                                chList.Insert(i, '+');
-                                i++;
-                            }
-                            else if (i - 2 >= 0 && (chList[i - 1] != '(' && chList[i - 2] == '-') && chList[i + 1] != '*') //如果前一个a，b插入的运算符(不含括号闭包)为'-'那么后面a，b插入的符号都为'-'
-                            {
-                                chList.Insert(i, '-');
-                                i++;
-                            }
-                            else if (i - 2 >= 0 && (chList[i - 1] != '(' && chList[i - 2] == '+') && chList[i + 1] != '*')//如果前一个a，b插入的运算符为'＋'则
-                            {
-
-                                chList.Insert(i, '-');
-                                i++;
-
-
-                            }
-                            else//如果是第一次运算应该插入'+'，'('会重置到第一次
-                            {
-                                chList.Insert(i, '+');
-                                i++;
-                            }
-                        }
-                        else//处在最后一位的a，b应该插入'-'
-                        {
-                            chList.Insert(i, '-');
-                            i++;
-                        }
-
-                    }
-                    else if (chList[i - 1] == ')' || chList[i - 1] == '*')//当a，b的前面有带括号和闭包的运算时直接插入'-'
-                    {
-                        chList.Insert(i, '-');
+                        chList.Insert(i, '+');
                         i++;
+
                     }
                 }
                 else if (chList[i] == 'b' && i != 0)
                 {
-                    if (chList[i - 1] == 'a' || chList[i - 1] == 'b' )
+                    if (chList[i - 1] == 'a' || chList[i - 1] == 'b' || chList[i - 1] == ')' || chList[i - 1] == '*')
                     {
-                        if (i != chList.Count - 1)//不为最后一位时判断插入符号
-                        {
-                            if (chList[i + 1] == '*')//当后一位是闭包时，应该插入'+'
-                            {
-                                chList.Insert(i, '+');
-                                i++;
-                            }
-                            else if (i - 2 >= 0 && (chList[i - 1] != '(' && chList[i - 2] == '-') && chList[i + 1] != '*') //如果前一个a，b插入的运算符(不含括号闭包)为'-'那么后面a，b插入的符号都为'-'
-                            {
-                                chList.Insert(i, '-');
-                                i++;
-                            }
-                            else if (i - 2 >= 0 && (chList[i - 1] != '(' && chList[i - 2] == '+') && chList[i + 1] != '*')//如果前一个a，b插入的运算符为'＋'则
-                            {
-                               
-                                    chList.Insert(i, '-');
-                                    i++;
-                         
-
-                            }
-                            else//如果是第一次运算应该插入'+'
-                            {
-                                chList.Insert(i, '+');
-                                i++;
-                            }
-                        }
-                        else//处在最后一位的a，b应该插入'-'
-                        {
-                            chList.Insert(i, '-');
-                            i++;
-                        }
-
-                    }
-                    else if (chList[i - 1] == ')' || chList[i - 1] == '*')//当a，b的前面有带括号和闭包的运算时直接插入'-'
-                    {
-                        chList.Insert(i, '-');
+                        chList.Insert(i, '+');
                         i++;
+
                     }
+   
                 }
             }
             
@@ -309,8 +241,8 @@ namespace test
             FrontToBack(newch);
             Calculation();
 
-            NFA = calculate2.Peek();
-            cell result = calculate2.Pop();
+            NFA = calculate.Peek();
+            cell result = calculate.Pop();
             string output = null;
             output = output + "开始状态    接受符号    到达状态\n";
             for (int i = 0; i < result.EdgeCount; i++)
@@ -529,81 +461,52 @@ namespace test
             {
                 if (output[i] == '+')
                 {
-                    char symbol;
+                    
                     List<cell> para = new List<cell>();
                     for(int j = 0; j < 2; j++)
                     {
-                        if (calculate2.Count != 0)
-                        { 
-                            para.Add(calculate2.Pop());//优先查看计算过的Cell
-                        }
-                        else
-                        {
-                            symbol=calculate1.Pop();
-                            para.Add(MakeCell(symbol));
-                           
-                        }
-                        
+                    
+                            para.Add(calculate.Pop());//优先查看计算过的Cell
+                    
                     }
-                    calculate2.Push(PLUS(para[1], para[0]));//左->右
+                    calculate.Push(PLUS(para[1], para[0]));//左->右
                 }
-                else if (output[i] == '-')
-                {
-                    char symbol;
-                    List<cell> para = new List<cell>();
-                    for (int j = 0; j < 2; j++)
-                    {
-                        if (calculate2.Count != 0)
-                        { 
-                            para.Add(calculate2.Pop());//优先查看计算过的Cell
-                        }
-                        else
-                        {
-                            symbol = calculate1.Pop();
-                            para.Add(MakeCell(symbol));
-                           
-                        }
+                //else if (output[i] == '-')
+                //{
+                //    char symbol;
+                //    List<cell> para = new List<cell>();
+                //    for (int j = 0; j < 2; j++)
+                //    {
+                //            para.Add(calculate.Pop());//优先查看计算过的Cell
+                      
 
-                    }
-                    calculate2.Push(PLUS(para[0], para[1]));//右->左
-                }
+                //    }
+                //    calculate.Push(PLUS(para[0], para[1]));//右->左
+                //}
                 else if(output[i] == '|')
                 {
-                    char symbol;
+                   
                     List<cell> para = new List<cell>();
                     for (int j = 0; j < 2; j++)
                     {
-                        if (calculate1.Count != 0)
-                        {
-                            symbol = calculate1.Pop();
-                            para.Add(MakeCell(symbol));
-                        }
-                        else
-                        {
-                            para.Add(calculate2.Pop());
-                        }
+                      
+                            para.Add(calculate.Pop());
+                      
 
                     }
-                    calculate2.Push(OR(para[0], para[1]));
+                    calculate.Push(OR(para[0], para[1]));
                 }
                 else if(output[i] == '*')
                 {
-                    char symbol;
+                   
                     List<cell> para = new List<cell>();
-                    if (calculate1.Count != 0)
-                    {
-                        symbol = calculate1.Pop();
-                        para.Add(MakeCell(symbol));
-                    }
-                    else
-                    {
-                        para.Add(calculate2.Pop());
-                    }
-                    calculate2.Push(CLOSURE(para[0]));
+                  
+                    para.Add(calculate.Pop());
+                    calculate.Push(CLOSURE(para[0]));
                 }
                 else
                 {
-                    calculate1.Push(output[i]);
+                    calculate.Push(MakeCell(output[i]));
                 }
             }
         }
