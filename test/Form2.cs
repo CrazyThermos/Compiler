@@ -12,10 +12,6 @@ namespace test
 {
     public partial class Form2 : Form
     {
-        //cell NFAcells;
-        //cell DFAcells;
-        //cell MFAcells;
-        
         public Form2()
         {
             InitializeComponent();
@@ -50,7 +46,6 @@ namespace test
             else
             {
                 Char[] ch = str.ToCharArray();
-                //GolbalPara.set();
                 stateName = 0;
                 NormalToNFA(ch);
             }
@@ -61,7 +56,6 @@ namespace test
             string str = textBox1.Text;
             opLevel.Clear();
             calculate.Clear();
-     
             output.Clear();
             if (Detection(str) != true)
             {
@@ -70,9 +64,25 @@ namespace test
             else
             {
                 Char[] ch = str.ToCharArray();
-                //GolbalPara.set();
                 stateName = 0;
                 NFAToDFA(ch);
+            }
+        }
+        private void button9_Click(object sender, EventArgs e)
+        {
+            string str = textBox1.Text;
+            opLevel.Clear();
+            calculate.Clear();
+            output.Clear();
+            if (Detection(str) != true)
+            {
+                MessageBox.Show("表达式错误！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                Char[] ch = str.ToCharArray();
+                stateName = 0;
+                DFAToMFA(ch);
             }
         }
         /*
@@ -82,6 +92,8 @@ namespace test
          *  'a''b'    
          *  这些算符的优先顺序为先'*'，再'+''-'，最后’|’
          */
+        List<char> transymbol = new List<char>(new char[] { 'a','b','c','d','e','f','g','h','i'});
+       
         private Boolean Detection(String str)
         {
             Char[] ch = str.ToCharArray();
@@ -156,31 +168,23 @@ namespace test
         //Stack<char> calculate1 = new Stack<char>();
         Stack<cell> calculate = new Stack<cell>();
 
-
+        
         cell NFA = new cell();
         cell DFA = new cell();
+        cell MFA = new cell();
+        CloseSet MFAset = new CloseSet();
+
+        List<List<state>> P;
+        
         //List<edge> aEdge = new List<edge>();
         //List<edge> bEdge = new List<edge>();
         int NFAb = 0;
         int NFAe = 0;
         int DFAb = 0;
         int DFAe = 0;
-        //class GolbalPara
-        //{
-        //    public static int stateName = 0;
-        //    public GolbalPara()
-        //    {
-        //        stateName = 0;
-        //    }
-        //    public int get()
-        //    {
-        //        return stateName;
-        //    }
-        //    public static void set()
-        //    {
-        //        stateName = 0;
-        //    }
-        //}
+        int MFAb = 0;
+        int MFAe = 0;
+
         int stateName = 0;
        
         private void NormalToNFA(char[] ch)
@@ -320,6 +324,7 @@ namespace test
 
             }
 
+            MFAset = C;
             DFA = MakeDFAcell(C);
 
             cell result = DFA;
@@ -342,7 +347,202 @@ namespace test
 
         private void DFAToMFA(char[] ch)
         {
+            NFAToDFA(ch);
+            P = new List<List<state>>();
+            P = InitP();
+            while (true)
+            {
+                int lastCount = P.Count;
+                for(int i = 0; i < P.Count; i++)
+                {
+                    List<List<state>> D1 = Divide(P[i],'a');
+                    P.RemoveAt(i);
+                    P.InsertRange(i,D1);
+                    List<List<state>> D2 = Divide(P[i],'b');
+                    P.RemoveAt(i);
+                    P.InsertRange(i, D2);
+                }
+                if (P.Count==lastCount)
+                {
+                    break;
+                }
+            }
+            Simplification();
 
+            MFA = MakeMFAcell();
+            cell result = MFA;
+            string output = null;
+            output = output + "开始状态    接受符号    到达状态\n";
+            for (int i = 0; i < result.EdgeCount; i++)
+            {
+                string s = String.Format("{0,-12}{1,-12}{2,-12}\n", result.EdgeSet[i].StartState.StateName, result.EdgeSet[i].TransSymbol, result.EdgeSet[i].EndState.StateName);
+                output = output + s;
+
+            }
+
+            richTextBox3.Text = output;
+
+            MFAb = MFA.StartState.StateName;
+            MFAe = MFA.EndState.StateName;
+            textBox6.Text = MFAb.ToString();
+            textBox7.Text = MFAe.ToString();
+
+        }
+
+        /*-------------------------------------------------------DFA转MFA----------------------------------------------------------*/
+        
+        private cell MakeMFAcell()
+        {
+            cell m = new cell();
+
+            for(int i = 0; i < P.Count; i++)
+            {
+                edge e = new edge();
+                e.StartState.StateName = P[i][0].StateName;
+                e.TransSymbol = 'a';
+                e.EndState.StateName = P[i][0].anext;
+                m.EdgeSet.Add(e);
+            }
+
+            for (int i = 0; i < P.Count; i++)
+            {
+                edge e = new edge();
+                e.StartState.StateName = P[i][0].StateName;
+                e.TransSymbol = 'b';
+                e.EndState.StateName = P[i][0].bnext;
+                m.EdgeSet.Add(e);
+            }
+
+            m.StartState.StateName = 0;
+            m.EndState.StateName = DFA.EndState.StateName;
+            m.EdgeCount = m.EdgeSet.Count;
+            return m;
+        }
+        private void Simplification()//将P简化
+        {
+            for(int i = 0; i < P.Count; i++)//先改next
+            {       
+                    P[i][0].anext = P[FindInP(P[i][0].anext)][0].StateName;
+                    P[i][0].bnext = P[FindInP(P[i][0].bnext)][0].StateName;
+            }
+            for (int i = 0; i < P.Count; i++)//先改next
+            {
+                if (P[i].Count > 1)
+                {
+                    for(int j = 1; j < P[i].Count; j++)
+                    {
+                        P[i].RemoveAt(j);
+                    }
+                }
+            }
+        }
+     
+        private List<List<state>> Divide(List<state> S, char ch)//切割函数
+        {
+            List<List<state>> D = new List<List<state>>(new List<state>[1000]);
+            for(int i = 0; i < 1000; i++)
+            {
+                D[i] = new List<state>();
+            }
+            List<int> indexs = new List<int>();
+            if (ch == 'a') { 
+                for (int i=0;i<S.Count;i++)
+                {
+                    int index = FindInP(S[i].anext);
+                    if (index!=-1)
+                    {
+                        D[index].Add(S[i]);
+                        indexs.Add(index);
+                    }
+
+                }
+            }
+            else
+            {
+                for (int i = 0; i < S.Count; i++)
+                {
+                    int index = FindInP(S[i].bnext);
+                    if (index != -1)
+                    {
+                        D[index].Add(S[i]);
+                        indexs.Add(index);
+                    }
+                }
+            }
+            List<List<state>> saparate = new List<List<state>>();
+            Unrepeated(indexs);
+            for (int i = 0; i < indexs.Count; i++)
+            {
+                saparate.Add(D[indexs[i]]);
+            }
+            return saparate;
+        }
+
+        private int FindInP(int next)//在P中查找属于哪个集合，返回下标
+        {
+            for(int i = 0; i < P.Count; i++)
+            {
+                for(int j = 0; j < P[i].Count; j++)
+                {
+                    if (P[i][j].StateName == next)
+                    {
+                        return i;
+                    }
+                }
+            }
+            return -1;
+        }
+
+        public void Unrepeated(List<int> indexs)//去除子集中重复的项
+        {
+
+            int count = indexs.Count;
+            for (int i = 0; i < count; i++)
+            {
+                for (int j = i + 1; j < count; j++)
+                {
+                    if (indexs[i] == indexs[j])
+                    {
+                        indexs.RemoveAt(i);
+                        count = indexs.Count;
+                        i--;
+                        break;
+                    }
+
+                }
+            }
+
+        }  
+
+        private List<List<state>> InitP()//初始化P
+        {
+
+            List<state> L = new List<state>();
+            List<state> R = new List<state>();
+            for (int i = 0; i < MFAset.CSet.Count; i++)
+            {
+
+                if (i != MFAset.CSet.Count - 1)
+                {
+                    state s = new state();
+                    s.StateName = i;
+                    s.anext = MFAset.CSet[i].anext;
+                    s.bnext = MFAset.CSet[i].bnext;
+                    L.Add(s);
+                }
+                else
+                {
+                    state s = new state();
+                    s.StateName = i;
+                    s.anext = MFAset.CSet[i].anext;
+                    s.bnext = MFAset.CSet[i].bnext;
+                    R.Add(s);
+                }
+
+            }
+            P.Add(L);
+            P.Add(R);
+            return P;
         }
         /*-------------------------------------------------------NFA转DFA----------------------------------------------------------*/
 
@@ -419,10 +619,7 @@ namespace test
             return c;
         }
 
-        /*-------------------------------------------------------正规式转NFA----------------------------------------------------------*/
-
-
-        /*
+        /*-------------------------------------------------------正规式转NFA----------------------------------------------------------
         * 运算符优先级
         * 1 (
         * 2 |
@@ -459,6 +656,7 @@ namespace test
             }
       
         }
+
         private int compareLevel(char x,char y)//比较优先级函数
         {
             int xn = getLevel(x);
@@ -473,6 +671,7 @@ namespace test
             }
             
         }
+
         private void FrontToBack(char[] ch)//中缀转后缀
         {
 
@@ -542,23 +741,11 @@ namespace test
                     for(int j = 0; j < 2; j++)
                     {
                     
-                            para.Add(calculate.Pop());//优先查看计算过的Cell
+                            para.Add(calculate.Pop());//查看计算过的Cell
                     
                     }
                     calculate.Push(PLUS(para[1], para[0]));//左->右
                 }
-                //else if (output[i] == '-')
-                //{
-                //    char symbol;
-                //    List<cell> para = new List<cell>();
-                //    for (int j = 0; j < 2; j++)
-                //    {
-                //            para.Add(calculate.Pop());//优先查看计算过的Cell
-                      
-
-                //    }
-                //    calculate.Push(PLUS(para[0], para[1]));//右->左
-                //}
                 else if(output[i] == '|')
                 {
                    
@@ -609,27 +796,6 @@ namespace test
             return NewCell;
         }
 
-        private cell MakeCell(char symbol,int start,int end)
-        {
-            cell NewCell = new cell();
-            NewCell.EdgeCount = 0;
-            edge NewEdge = new edge();
-            //新节点
-            state StartState = new state();
-            state EndState = new state();
-            StartState.StateName = start;
-            EndState.StateName = end;
-            //新边，加入两个新节点
-            NewEdge.StartState = StartState;
-            NewEdge.EndState = EndState;
-            NewEdge.TransSymbol = symbol;
-            //构建新单元
-            NewCell.EdgeSet.Add(NewEdge);
-            NewCell.StartState = NewCell.EdgeSet[0].StartState;
-            NewCell.EndState = NewCell.EdgeSet[0].EndState;
-            NewCell.EdgeCount = NewCell.EdgeSet.Count;
-            return NewCell;
-        }
         private cell OR(cell Left,cell Right)
         {
             cell NewCell = new cell();
@@ -742,7 +908,7 @@ namespace test
             return NewCell;
         }//'*'的运算
 
-        
+       
     }
 
 
@@ -752,6 +918,8 @@ namespace test
     class state
     {
         public int StateName;
+        public int bnext;
+        public int anext;
     };
 
     //NFA的边，空转换符用'#'表示
@@ -839,30 +1007,6 @@ namespace test
         public int bnext;
         public int anext;
 
-        //public void Unrepeated()//去除子集中重复的项
-        //{
 
-        //    int count = tSet.Count;
-
-        //    int time = 0;
-
-        //    count = tSet.Count;
-        //    for (int i = 0; i < count; i++)
-        //    {
-        //        for (int j = i + 1; j < count; j++)
-        //        {
-        //            time++;
-        //            if (tSet[i] == tSet[j])
-        //            {
-        //                tSet.RemoveAt(i);
-        //                count = tSet.Count;
-        //                i--;
-        //                break;
-        //            }
-
-        //        }
-        //    }
-       
-        //}
     }
 }
