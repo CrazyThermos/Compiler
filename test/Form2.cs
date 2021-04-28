@@ -92,7 +92,7 @@ namespace test
          *  'a''b'    
          *  这些算符的优先顺序为先'*'，再'+''-'，最后’|’
          */
-        List<char> transymbol = new List<char>(new char[] { 'a','b','c','d','e','f','g','h','i'});
+        List<char> transymbol = new List<char>();
        
         private Boolean Detection(String str)
         {
@@ -147,7 +147,7 @@ namespace test
                         }
                     }
                 }
-                else if (ch[i] != 'a' && ch[i] != 'b')
+                else if (ch[i] > 'z' || ch[i] < 'a')
                 {
                     return false;
                 }
@@ -163,6 +163,7 @@ namespace test
             }
             return true;
         }
+
         List<char> output = new List<char>();
         Stack<char> opLevel = new Stack<char>();
         //Stack<char> calculate1 = new Stack<char>();
@@ -197,16 +198,24 @@ namespace test
             {
                 chList.Add(ch[i]);
             }
+            transymbol.Clear();
+            transymbol.AddRange(chList.Distinct());
+
+            for(int i = 0; i < transymbol.Count; i++)
+            {
+                if (transymbol[i] < 'a' || transymbol[i] > 'z')
+                {
+                    transymbol.RemoveAt(i);
+                    i--;
+                }
+            }
+            
             int len = chList.Count;
             /*
              * 
-             * 
-             * 插入加号减号
-             * 加号表示左->
-             * 右减号表示右->左
-             * 
+             * 插入加号
+             * 加号表示左->右 
              * 考虑 a+b a* ()左右两边的情况 
-             * 只有优先级的运算前面为'+'否则为'-'，其中仅有第一次的ab运算会插入'+'，'('会重置到第一次
              * 
              */
             for(int i = 0; i < chList.Count; i++)
@@ -220,24 +229,23 @@ namespace test
                     }
                     
                 }
-                else if (chList[i] == 'a' && i != 0)
+                else if (transymbol.Contains(chList[i]) && i != 0)
                 {
-                    if (chList[i - 1] == 'a' || chList[i - 1] == 'b' || chList[i - 1] == ')' || chList[i - 1] == '*')
+                    if (transymbol.Contains(chList[i - 1]) || chList[i - 1] == ')' || chList[i - 1] == '*')
                     {
                         chList.Insert(i, '+');
                         i++;
 
                     }
                 }
-                else if (chList[i] == 'b' && i != 0)
+                else if (transymbol.Contains(chList[i]) && i != 0)
                 {
-                    if (chList[i - 1] == 'a' || chList[i - 1] == 'b' || chList[i - 1] == ')' || chList[i - 1] == '*')
+                    if (transymbol.Contains(chList[i - 1]) || chList[i - 1] == ')' || chList[i - 1] == '*')
                     {
                         chList.Insert(i, '+');
                         i++;
 
                     }
-   
                 }
             }
             
@@ -289,39 +297,61 @@ namespace test
                 int order = C.Sign();
                 TSet Ta = new TSet();
                 TSet Tb = new TSet();
-                TSet T = new TSet();
 
+                List<TSet> Tedges = new List<TSet>();
+
+                TSet T = new TSet();
+                /*-------------------------------------------------------------------------*/
                 for (int i = 0; i < C.CSet[order].tSet.Count; i++)
                 {
                     T.tSet.Add(C.CSet[order].tSet[i]);
                 }
-                Ta = E_Closure(Move(T,'a'));
-                Tb = E_Closure(Move(T,'b'));
-                Ta.tSet.Sort();
-                Tb.tSet.Sort();
-                //Ta.Unrepeated();
-                //Tb.Unrepeated();
 
-                if (C.JoinNew(Ta) == -1)
-                {   
-                    C.CSet.Add(Ta);
-                    C.CSet[order].anext = C.CSet.Count-1;
-                }
-                else
+                for (int i = 0; i < transymbol.Count; i++)
                 {
-                    C.CSet[order].anext = C.JoinNew(Ta);
+                    TSet temp = E_Closure(Move(T, transymbol[i]));
+                    temp.tSet.Sort();
+                    Tedges.Add(temp);
                 }
-                if (C.JoinNew(Tb) == -1)
+
+                for (int i = 0; i < transymbol.Count; i++)
                 {
+                    if (C.JoinNew(Tedges[i]) == -1)
+                    {
+                        C.CSet.Add(Tedges[i]);
+                        C.CSet[order].next[i] = C.CSet.Count - 1;
+                    }
+                    else
+                    {
+                        C.CSet[order].next[i] = C.JoinNew(Tedges[i]);
+                    }
+                }
+                /*-------------------------------------------------------------------------*/
+                //Ta = E_Closure(Move(T,'a'));
+                //Tb = E_Closure(Move(T,'b'));
+                //Ta.tSet.Sort();
+                //Tb.tSet.Sort();
+                
+                //if (C.JoinNew(Ta) == -1)
+                //{   
+                //    C.CSet.Add(Ta);
+                //    C.CSet[order].anext = C.CSet.Count-1;
+                //}
+                //else
+                //{
+                //    C.CSet[order].anext = C.JoinNew(Ta);
+                //}
+                //if (C.JoinNew(Tb) == -1)
+                //{
                     
-                    C.CSet.Add(Tb);
-                    C.CSet[order].bnext = C.CSet.Count - 1;
-                }
-                else
-                {
-                    C.CSet[order].bnext = C.JoinNew(Tb);
-                }
-
+                //    C.CSet.Add(Tb);
+                //    C.CSet[order].bnext = C.CSet.Count - 1;
+                //}
+                //else
+                //{
+                //    C.CSet[order].bnext = C.JoinNew(Tb);
+                //}
+                /*-------------------------------------------------------------------------*/
             }
 
             MFAset = C;
@@ -355,12 +385,20 @@ namespace test
                 int lastCount = P.Count;
                 for(int i = 0; i < P.Count; i++)
                 {
-                    List<List<state>> D1 = Divide(P[i],'a');
-                    P.RemoveAt(i);
-                    P.InsertRange(i,D1);
-                    List<List<state>> D2 = Divide(P[i],'b');
-                    P.RemoveAt(i);
-                    P.InsertRange(i, D2);
+                    for(int j = 0; j < transymbol.Count; j++)
+                    {
+                        List<List<state>> D = Divide(P[i], transymbol[j]);
+                        P.RemoveAt(i);
+                        P.InsertRange(i, D);
+                    }
+                    /*-------------------------------------------------------------------------*/
+                    //List<List<state>> D1 = Divide(P[i],'a');
+                    //P.RemoveAt(i);
+                    //P.InsertRange(i,D1);
+                    //List<List<state>> D2 = Divide(P[i],'b');
+                    //P.RemoveAt(i);
+                    //P.InsertRange(i, D2);
+                    /*-------------------------------------------------------------------------*/
                 }
                 if (P.Count==lastCount)
                 {
@@ -394,25 +432,38 @@ namespace test
         private cell MakeMFAcell()
         {
             cell m = new cell();
-
-            for(int i = 0; i < P.Count; i++)
-            {
-                edge e = new edge();
-                e.StartState.StateName = P[i][0].StateName;
-                e.TransSymbol = 'a';
-                e.EndState.StateName = P[i][0].anext;
-                m.EdgeSet.Add(e);
-            }
-
+            /*-------------------------------------------------------------------------*/
             for (int i = 0; i < P.Count; i++)
             {
-                edge e = new edge();
-                e.StartState.StateName = P[i][0].StateName;
-                e.TransSymbol = 'b';
-                e.EndState.StateName = P[i][0].bnext;
-                m.EdgeSet.Add(e);
-            }
+                for (int j = 0; j < transymbol.Count; j++)
+                {
+                    edge e = new edge();
+                    e.StartState.StateName = P[i][0].StateName;
+                    e.TransSymbol = transymbol[j];
+                    e.EndState.StateName = P[i][0].next[j];
+                    m.EdgeSet.Add(e);
+                }
 
+            }
+            /*-------------------------------------------------------------------------*/
+            //for (int i = 0; i < P.Count; i++)
+            //{
+            //    edge e = new edge();
+            //    e.StartState.StateName = P[i][0].StateName;
+            //    e.TransSymbol = 'a';
+            //    e.EndState.StateName = P[i][0].anext;
+            //    m.EdgeSet.Add(e);
+            //}
+
+            //for (int i = 0; i < P.Count; i++)
+            //{
+            //    edge e = new edge();
+            //    e.StartState.StateName = P[i][0].StateName;
+            //    e.TransSymbol = 'b';
+            //    e.EndState.StateName = P[i][0].bnext;
+            //    m.EdgeSet.Add(e);
+            //}
+            /*-------------------------------------------------------------------------*/
             m.StartState.StateName = 0;
             m.EndState.StateName = DFA.EndState.StateName;
             m.EdgeCount = m.EdgeSet.Count;
@@ -421,9 +472,16 @@ namespace test
         private void Simplification()//将P简化
         {
             for(int i = 0; i < P.Count; i++)//先改next
-            {       
-                    P[i][0].anext = P[FindInP(P[i][0].anext)][0].StateName;
-                    P[i][0].bnext = P[FindInP(P[i][0].bnext)][0].StateName;
+            {
+                /*-------------------------------------------------------------------------*/
+                for (int j = 0; j < transymbol.Count; j++)
+                {
+                    P[i][0].next[j] = P[FindInP(P[i][0].next[j])][0].StateName;
+                }
+                /*-------------------------------------------------------------------------*/
+                //P[i][0].anext = P[FindInP(P[i][0].anext)][0].StateName;
+                //P[i][0].bnext = P[FindInP(P[i][0].bnext)][0].StateName;
+                /*-------------------------------------------------------------------------*/
             }
             for (int i = 0; i < P.Count; i++)//先改next
             {
@@ -445,30 +503,48 @@ namespace test
                 D[i] = new List<state>();
             }
             List<int> indexs = new List<int>();
-            if (ch == 'a') { 
-                for (int i=0;i<S.Count;i++)
-                {
-                    int index = FindInP(S[i].anext);
-                    if (index!=-1)
-                    {
-                        D[index].Add(S[i]);
-                        indexs.Add(index);
-                    }
-
-                }
-            }
-            else
+            /*-------------------------------------------------------------------------*/
+            for (int i = 0; i < transymbol.Count; i++)
             {
-                for (int i = 0; i < S.Count; i++)
+                if (ch == transymbol[i])
                 {
-                    int index = FindInP(S[i].bnext);
-                    if (index != -1)
+                    for (int j = 0; j < S.Count; j++)
                     {
-                        D[index].Add(S[i]);
-                        indexs.Add(index);
+                        int index = FindInP(S[j].next[i]);
+                        if (index != -1)
+                        {
+                            D[index].Add(S[j]);
+                            indexs.Add(index);
+                        }
+
                     }
                 }
             }
+            /*-------------------------------------------------------------------------*/
+            //if (ch == 'a') {
+            //    for (int i = 0; i < S.Count; i++)
+            //    {
+            //        int index = FindInP(S[i].anext);
+            //        if (index != -1)
+            //        {
+            //            D[index].Add(S[i]);
+            //            indexs.Add(index);
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    for (int i = 0; i < S.Count; i++)
+            //    {
+            //        int index = FindInP(S[i].bnext);
+            //        if (index != -1)
+            //        {
+            //            D[index].Add(S[i]);
+            //            indexs.Add(index);
+            //        }
+            //    }
+            //}
+            /*-------------------------------------------------------------------------*/
             List<List<state>> saparate = new List<List<state>>();
             Unrepeated(indexs);
             for (int i = 0; i < indexs.Count; i++)
@@ -526,16 +602,30 @@ namespace test
                 {
                     state s = new state();
                     s.StateName = i;
-                    s.anext = MFAset.CSet[i].anext;
-                    s.bnext = MFAset.CSet[i].bnext;
+                    /*-------------------------------------------------------------------------*/
+                    for (int j = 0; j < transymbol.Count; j++)
+                    {
+                        s.next[j] = MFAset.CSet[i].next[j];
+                    }
+                    /*-------------------------------------------------------------------------*/
+                    //s.anext = MFAset.CSet[i].anext;
+                    //s.bnext = MFAset.CSet[i].bnext;
+                    /*-------------------------------------------------------------------------*/
                     L.Add(s);
                 }
                 else
                 {
                     state s = new state();
                     s.StateName = i;
-                    s.anext = MFAset.CSet[i].anext;
-                    s.bnext = MFAset.CSet[i].bnext;
+                    /*-------------------------------------------------------------------------*/
+                    for (int j = 0; j < transymbol.Count; j++)
+                    {
+                        s.next[j] = MFAset.CSet[i].next[j];
+                    }
+                    /*-------------------------------------------------------------------------*/
+                    //s.anext = MFAset.CSet[i].anext;
+                    //s.bnext = MFAset.CSet[i].bnext;
+                    /*-------------------------------------------------------------------------*/
                     R.Add(s);
                 }
 
@@ -595,24 +685,38 @@ namespace test
         private cell MakeDFAcell(CloseSet C)
         {
             cell c = new cell();
-            for(int i = 0; i < C.CSet.Count; i++)
-            {
-                edge e = new edge();
-                e.StartState.StateName = i;
-                e.TransSymbol = 'a';
-                e.EndState.StateName = C.CSet[i].anext;
-                c.EdgeSet.Add(e);
-            }
-
+            /*-------------------------------------------------------------------------*/
             for (int i = 0; i < C.CSet.Count; i++)
             {
-                edge e = new edge();
-                e.StartState.StateName = i;
-                e.TransSymbol = 'b';
-                e.EndState.StateName = C.CSet[i].bnext;
-                c.EdgeSet.Add(e);
+                for (int j = 0; j < transymbol.Count; j++)
+                {
+                    edge e = new edge();
+                    e.StartState.StateName = i;
+                    e.TransSymbol = transymbol[j];
+                    e.EndState.StateName = C.CSet[i].next[j];
+                    c.EdgeSet.Add(e);
+                }
             }
+            /*-------------------------------------------------------------------------*/
 
+            //for (int i = 0; i < C.CSet.Count; i++)
+            //{
+            //    edge e = new edge();
+            //    e.StartState.StateName = i;
+            //    e.TransSymbol = 'a';
+            //    e.EndState.StateName = C.CSet[i].anext;
+            //    c.EdgeSet.Add(e);
+            //}
+
+            //for (int i = 0; i < C.CSet.Count; i++)
+            //{
+            //    edge e = new edge();
+            //    e.StartState.StateName = i;
+            //    e.TransSymbol = 'b';
+            //    e.EndState.StateName = C.CSet[i].bnext;
+            //    c.EdgeSet.Add(e);
+            //}
+            /*-------------------------------------------------------------------------*/
             c.StartState.StateName = 0;
             c.EndState.StateName = C.CSet.Count - 1;
             c.EdgeCount = c.EdgeSet.Count;
@@ -918,8 +1022,9 @@ namespace test
     class state
     {
         public int StateName;
-        public int bnext;
-        public int anext;
+        //public int bnext;
+        //public int anext;
+        public List<int> next = new List<int>(new int[26]);
     };
 
     //NFA的边，空转换符用'#'表示
@@ -1004,9 +1109,9 @@ namespace test
     {
         public List<int> tSet = new List<int>();
         public bool sign = false;
-        public int bnext;
-        public int anext;
-
+        //public int bnext;
+        //public int anext;
+        public List<int> next = new List<int>(new int[26]);
 
     }
 }
