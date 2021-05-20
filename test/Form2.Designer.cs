@@ -61,6 +61,8 @@ namespace test
             this.label7 = new System.Windows.Forms.Label();
             this.button9 = new System.Windows.Forms.Button();
             this.richTextBox3 = new System.Windows.Forms.RichTextBox();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.groupBox1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -223,6 +225,7 @@ namespace test
             this.button3.TabIndex = 1;
             this.button3.Text = "读入NFA文件";
             this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
             // richTextBox1
             // 
@@ -231,7 +234,7 @@ namespace test
             this.richTextBox1.Location = new System.Drawing.Point(6, 27);
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.ReadOnly = true;
-            this.richTextBox1.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedHorizontal;
+            this.richTextBox1.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
             this.richTextBox1.Size = new System.Drawing.Size(288, 368);
             this.richTextBox1.TabIndex = 0;
             this.richTextBox1.Text = "";
@@ -319,6 +322,7 @@ namespace test
             this.button6.TabIndex = 1;
             this.button6.Text = "读入DFA文件";
             this.button6.UseVisualStyleBackColor = true;
+            this.button6.Click += new System.EventHandler(this.button6_Click);
             // 
             // richTextBox2
             // 
@@ -327,7 +331,7 @@ namespace test
             this.richTextBox2.Location = new System.Drawing.Point(6, 27);
             this.richTextBox2.Name = "richTextBox2";
             this.richTextBox2.ReadOnly = true;
-            this.richTextBox2.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedHorizontal;
+            this.richTextBox2.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
             this.richTextBox2.Size = new System.Drawing.Size(288, 368);
             this.richTextBox2.TabIndex = 0;
             this.richTextBox2.Text = "";
@@ -402,11 +406,15 @@ namespace test
             this.richTextBox3.Location = new System.Drawing.Point(7, 27);
             this.richTextBox3.Name = "richTextBox3";
             this.richTextBox3.ReadOnly = true;
-            this.richTextBox3.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedHorizontal;
+            this.richTextBox3.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
             this.richTextBox3.Size = new System.Drawing.Size(288, 368);
             this.richTextBox3.TabIndex = 0;
             this.richTextBox3.Text = "";
             this.richTextBox3.WordWrap = false;
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
             // 
             // Form2
             // 
@@ -464,5 +472,7 @@ namespace test
         private System.Windows.Forms.TextBox textBox4;
         private System.Windows.Forms.TextBox textBox7;
         private System.Windows.Forms.TextBox textBox6;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
     }
 }

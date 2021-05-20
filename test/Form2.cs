@@ -17,6 +17,160 @@ namespace test
             InitializeComponent();
         }
 
+        public void initDialog()
+        {
+            openFileDialog1.InitialDirectory = @"C:\Users\67406\Desktop\compile";//设置起始文件夹
+            openFileDialog1.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*";//设置文件筛选类型
+            openFileDialog1.FileName = "";//设施初始的文件名为空
+            openFileDialog1.CheckFileExists = true;//检查文件是否存在
+            openFileDialog1.CheckPathExists = true;//检查路径是否存在
+
+            saveFileDialog1.InitialDirectory = @"C:\Users\67406\Desktop\compile";
+            saveFileDialog1.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*";
+            openFileDialog1.FileName = "文件名";
+        }
+        //读入nfa文件
+        private void button3_Click(object sender, EventArgs e)
+        {
+            DialogResult result = openFileDialog1.ShowDialog();//显示对话框接返回值
+            if (result == DialogResult.OK)
+            {
+                string CodeText = RWStream.ReadFile(openFileDialog1.FileName);
+                string[] CodePart = CodeText.Split('\n');
+
+                
+
+                string []nbstr = CodePart[0].Split(new char[] { '开', '始', '符', ':' ,';'});
+                NFAb = Convert.ToInt32(nbstr[1]);
+                string []nestr = CodePart[1].Split(new char[] { '终', '结', '符', ':' });
+                NFAe = Convert.ToInt32(nestr[1]);
+                string []s = CodePart[2].Split(new char[] { '符', '号', '集', ':' });
+                string []ss= s[1].Split(';');
+
+                NFA.EdgeSet.Clear();
+                NFA.StartState.StateName = NFAb;
+                NFA.EndState.StateName = NFAe;
+                transymbol.Clear();
+
+                for(int i = 0; i < ss.Length; i++)
+                {
+                    char []c = ss[i].ToCharArray();
+                    if ('a' <= c[0] && c[0] <= 'z')
+                    {
+                        transymbol.Add(c[0]);
+                    }
+                }
+
+                for(int i = 3; i < CodePart.Length; i++)
+                {
+                    string []edgeCh = CodePart[i].Split('\t');
+                    edge newEdge = new edge();
+                    newEdge.StartState.StateName = Convert.ToInt32(edgeCh[0]);
+                    newEdge.TransSymbol = Convert.ToChar(edgeCh[1]);
+                    newEdge.EndState.StateName = Convert.ToInt32(edgeCh[2]);
+                    NFA.EdgeSet.Add(newEdge);
+                }
+                NFA.EdgeCount = NFA.EdgeSet.Count;
+                //richTextBox1.Text = RWStream.ReadFile(openFileDialog1.FileName);
+                WriteNFA();
+                READFILE = true;
+                char []ch = new char[1];
+                NFAToDFA(ch);
+                MFAmax = DFAe + 1;
+                DFAToMFA(ch);
+                READFILE = false;
+
+            }
+        }
+        //读入dfa文件
+        private void button6_Click(object sender, EventArgs e)
+        {
+            DialogResult result = openFileDialog1.ShowDialog();//显示对话框接返回值
+            if (result == DialogResult.OK)
+            {
+
+                string CodeText = RWStream.ReadFile(openFileDialog1.FileName);
+                string[] CodePart = CodeText.Split('\n');
+
+                DFA.EdgeSet.Clear();
+                DFA.StartState.StateName = DFAb;
+                DFA.EndState.StateName = DFAe;
+                transymbol.Clear();
+                MFAset = new CloseSet();
+                MFAes.Clear();
+                DFAes.Clear();
+                
+                string[] nbstr = CodePart[0].Split(new char[] { ':' ,';'});
+                DFAb = Convert.ToInt32(nbstr[1]);
+                string[] nestr = CodePart[1].Split(new char[] { ':', '\r' });
+                string[] nestrs = nestr[1].Split(';');
+                for(int i = 0;i < nestrs.Length ; i++)
+                {
+                    if(nestrs[i] != "")
+                    DFAes.Add(Convert.ToInt32(nestrs[i]));
+                }
+                string[] countstr = CodePart[2].Split(new char[] {  ':' });
+                int counts = Convert.ToInt32(countstr[1]);
+                MFAmax = counts;
+                string[] s = CodePart[3].Split(new char[] {  ':' });
+                string[] ss = s[1].Split(';');
+
+
+
+
+                for (int i = 0; i < ss.Length; i++)
+                {
+                    char[] c = ss[i].ToCharArray();
+                    if ('a' <= c[0] && c[0] <= 'z')
+                    {
+                        transymbol.Add(c[0]);
+                    }
+                }
+
+                for (int i = 4; i < CodePart.Length; i++)//建立dfa
+                {
+                    if (CodePart[i] != "")
+                    {
+                        string[] edgeCh = CodePart[i].Split('\t');
+                        edge newEdge = new edge();
+                        newEdge.StartState.StateName = Convert.ToInt32(edgeCh[0]);
+                        newEdge.TransSymbol = Convert.ToChar(edgeCh[1]);
+                        newEdge.EndState.StateName = Convert.ToInt32(edgeCh[2]);
+                        DFA.EdgeSet.Add(newEdge);
+                    }
+                    
+                }
+                
+                for(int i = 0; i < counts+1; i++)
+                {
+                    TSet newSet = new TSet();
+                    for(int j = 0; j < transymbol.Count; j++)
+                    {
+                        newSet.next[j] = -2;
+                    }
+                    MFAset.CSet.Add(newSet);
+                }
+                for (int i = 4; i < CodePart.Length; i++)
+                {
+                    string[] edgeCh = CodePart[i].Split(new char[] { ':', '\r' ,'\t'});
+                    if (edgeCh[2] != "")
+                    {
+                        MFAset.CSet[Convert.ToInt32(edgeCh[0])]
+                          .next[transymbol.IndexOf(Convert.ToChar(edgeCh[1]))] = Convert.ToInt32(edgeCh[2]);
+                    }
+                    
+ 
+                }
+                
+                DFA.EdgeCount = DFA.EdgeSet.Count;
+                //richTextBox1.Text = RWStream.ReadFile(openFileDialog1.FileName);
+                WriteDFA();
+                READFILE = true;
+                char[] ch = new char[1];
+                DFAToMFA(ch);
+                READFILE = false;
+            }
+        }
         //验证表达式的按钮
         private void button1_Click(object sender, EventArgs e)
         {
@@ -51,6 +205,7 @@ namespace test
             }
         }
         //NFAToDFA
+
         private void button7_Click(object sender, EventArgs e)
         {
             string str = textBox1.Text;
@@ -101,7 +256,7 @@ namespace test
             {
                 return false;
             }
-            int ls = 0;//判断左右括号数量
+            int ls = 0;//判断左右括号数量 右括号不能大于左括号
             int rs = 0;
             if (ch[0] == '|' || ch[0] == '*' || ch[0] == ')') {
                 return false;
@@ -185,9 +340,12 @@ namespace test
         int DFAe = 0;
         int MFAb = 0;
         int MFAe = 0;
-
+        int MFAmax = 0;
+        //多个终结状态的情况
+        List<int> DFAes = new List<int>();
+        List<int> MFAes = new List<int>();
         int stateName = 0;
-       
+        bool READFILE = false;
         private void NormalToNFA(char[] ch)
         {
            
@@ -255,8 +413,8 @@ namespace test
             FrontToBack(newch);
             Calculation();
 
-            NFA = calculate.Peek();
-            cell result = calculate.Pop();
+            NFA = calculate.Pop();
+            cell result = NFA;
             string output = null;
             output = output + "开始状态    接受符号    到达状态\n";
             for (int i = 0; i < result.EdgeCount; i++)
@@ -276,9 +434,56 @@ namespace test
 
         }
 
-        private void NFAToDFA(char[] ch)
+        private void WriteNFA()
         {
-            NormalToNFA(ch);
+            cell result = NFA;
+            string output = null;
+            output = output + "开始状态    接受符号    到达状态\n";
+            for (int i = 0; i < result.EdgeCount; i++)
+            {
+                string s = String.Format("{0,-12}{1,-12}{2,-12}\n", result.EdgeSet[i].StartState.StateName, result.EdgeSet[i].TransSymbol, result.EdgeSet[i].EndState.StateName);
+                output = output + s;
+
+            }
+
+            richTextBox1.Text = output;
+
+            NFAb = NFA.StartState.StateName;
+            NFAe = NFA.EndState.StateName;
+            textBox2.Text = NFAb.ToString();
+            textBox3.Text = NFAe.ToString();
+        }//将读取的NFA输出
+
+        private void WriteDFA()
+        {
+            cell result = DFA;
+            string output = null;
+            output = output + "开始状态    接受符号    到达状态\n";
+            for (int i = 0; i < result.EdgeCount; i++)
+            {
+                string s = String.Format("{0,-12}{1,-12}{2,-12}\n", result.EdgeSet[i].StartState.StateName, result.EdgeSet[i].TransSymbol, result.EdgeSet[i].EndState.StateName);
+                output = output + s;
+
+            }
+
+            richTextBox2.Text = output;
+
+            
+            textBox4.Text = DFAb.ToString();
+
+            string d = String.Join(",", DFAes.ToArray());
+            textBox5.Text = d;
+
+            
+        }
+
+        private void NFAToDFA(char[] ch )
+        {
+            if(READFILE == false)
+            {
+                NormalToNFA(ch);
+            }
+            
             CloseSet C = new CloseSet();
             TSet T0 = new TSet();
             //T0.tSet.Add(NFAb);
@@ -316,6 +521,7 @@ namespace test
 
                 for (int i = 0; i < transymbol.Count; i++)
                 {
+                   
                     if (C.JoinNew(Tedges[i]) == -1)
                     {
                         C.CSet.Add(Tedges[i]);
@@ -326,35 +532,11 @@ namespace test
                         C.CSet[order].next[i] = C.JoinNew(Tedges[i]);
                     }
                 }
-                /*-------------------------------------------------------------------------*/
-                //Ta = E_Closure(Move(T,'a'));
-                //Tb = E_Closure(Move(T,'b'));
-                //Ta.tSet.Sort();
-                //Tb.tSet.Sort();
-                
-                //if (C.JoinNew(Ta) == -1)
-                //{   
-                //    C.CSet.Add(Ta);
-                //    C.CSet[order].anext = C.CSet.Count-1;
-                //}
-                //else
-                //{
-                //    C.CSet[order].anext = C.JoinNew(Ta);
-                //}
-                //if (C.JoinNew(Tb) == -1)
-                //{
-                    
-                //    C.CSet.Add(Tb);
-                //    C.CSet[order].bnext = C.CSet.Count - 1;
-                //}
-                //else
-                //{
-                //    C.CSet[order].bnext = C.JoinNew(Tb);
-                //}
-                /*-------------------------------------------------------------------------*/
+               
             }
 
             MFAset = C;
+            DFAes.Add(MFAset.CSet.Count-1);
             DFA = MakeDFAcell(C);
 
             cell result = DFA;
@@ -373,11 +555,36 @@ namespace test
             DFAe = DFA.EndState.StateName;
             textBox4.Text = DFAb.ToString();
             textBox5.Text = DFAe.ToString();
+
+            if(READFILE == false)
+            {
+                textBox5.Text = DFAe.ToString();
+            }
+            else
+            {
+                List<int> ends = new List<int>();
+                DFAes = ends;
+                for(int i = 0; i < C.CSet.Count; i++)
+                {
+                    if (C.CSet[i].tSet.Contains(NFAe) == true)
+                    {
+                        ends.Add(i);
+                    }
+                }
+                string d = String.Join(",", ends.ToArray());
+                textBox5.Text = d;
+
+            }
         }
 
         private void DFAToMFA(char[] ch)
         {
-            NFAToDFA(ch);
+            if(READFILE == false)
+            {
+                NFAToDFA(ch);
+                MFAmax = DFAe+1;
+            }
+            
             P = new List<List<state>>();
             P = InitP();
             while (true)
@@ -391,14 +598,7 @@ namespace test
                         P.RemoveAt(i);
                         P.InsertRange(i, D);
                     }
-                    /*-------------------------------------------------------------------------*/
-                    //List<List<state>> D1 = Divide(P[i],'a');
-                    //P.RemoveAt(i);
-                    //P.InsertRange(i,D1);
-                    //List<List<state>> D2 = Divide(P[i],'b');
-                    //P.RemoveAt(i);
-                    //P.InsertRange(i, D2);
-                    /*-------------------------------------------------------------------------*/
+
                 }
                 if (P.Count==lastCount)
                 {
@@ -423,7 +623,15 @@ namespace test
             MFAb = MFA.StartState.StateName;
             MFAe = MFA.EndState.StateName;
             textBox6.Text = MFAb.ToString();
-            textBox7.Text = MFAe.ToString();
+            if (READFILE == false)
+            {
+                textBox7.Text = MFAe.ToString();
+            }
+            else
+            {
+                string m = String.Join(",", MFAes.ToArray());
+                textBox7.Text = m;
+            }
 
         }
 
@@ -437,33 +645,20 @@ namespace test
             {
                 for (int j = 0; j < transymbol.Count; j++)
                 {
-                    edge e = new edge();
-                    e.StartState.StateName = P[i][0].StateName;
-                    e.TransSymbol = transymbol[j];
-                    e.EndState.StateName = P[i][0].next[j];
-                    m.EdgeSet.Add(e);
+                    if(P[i][0].next[j] != -2)
+                    {
+                        edge e = new edge();
+                        e.StartState.StateName = P[i][0].StateName;
+                        e.TransSymbol = transymbol[j];
+                        e.EndState.StateName = P[i][0].next[j];
+                        m.EdgeSet.Add(e);
+
+                    }
+                    
                 }
 
             }
-            /*-------------------------------------------------------------------------*/
-            //for (int i = 0; i < P.Count; i++)
-            //{
-            //    edge e = new edge();
-            //    e.StartState.StateName = P[i][0].StateName;
-            //    e.TransSymbol = 'a';
-            //    e.EndState.StateName = P[i][0].anext;
-            //    m.EdgeSet.Add(e);
-            //}
 
-            //for (int i = 0; i < P.Count; i++)
-            //{
-            //    edge e = new edge();
-            //    e.StartState.StateName = P[i][0].StateName;
-            //    e.TransSymbol = 'b';
-            //    e.EndState.StateName = P[i][0].bnext;
-            //    m.EdgeSet.Add(e);
-            //}
-            /*-------------------------------------------------------------------------*/
             m.StartState.StateName = 0;
             m.EndState.StateName = DFA.EndState.StateName;
             m.EdgeCount = m.EdgeSet.Count;
@@ -476,15 +671,37 @@ namespace test
                 /*-------------------------------------------------------------------------*/
                 for (int j = 0; j < transymbol.Count; j++)
                 {
-                    P[i][0].next[j] = P[FindInP(P[i][0].next[j])][0].StateName;
+                    int temp = FindInP(P[i][0].next[j]);
+                    if ( temp != -1)//针对特殊情况如 a ab abb等
+                    {
+                        P[i][0].next[j] = P[FindInP(P[i][0].next[j])][0].StateName;
+                    }
+                    
                 }
-                /*-------------------------------------------------------------------------*/
-                //P[i][0].anext = P[FindInP(P[i][0].anext)][0].StateName;
-                //P[i][0].bnext = P[FindInP(P[i][0].bnext)][0].StateName;
-                /*-------------------------------------------------------------------------*/
+
             }
             for (int i = 0; i < P.Count; i++)//先改next
             {
+
+                for(int k = 0; k < P[i].Count; k++)//找终结点 优化？
+                {
+                    bool jump = false;
+                    for(int j = 0; j < DFAes.Count; j++)
+                    {
+                        if (P[i][k].StateName==DFAes[j])
+                        {
+                            MFAes.Add(P[i][0].StateName);
+                            jump = true;
+                            break;
+                        }
+                    }
+                    if (jump == true)
+                    {
+                        break;
+                    }
+                    
+                }
+
                 if (P[i].Count > 1)
                 {
                     for(int j = 1; j < P[i].Count; j++)
@@ -492,13 +709,15 @@ namespace test
                         P[i].RemoveAt(j);
                     }
                 }
+                
             }
+            Unrepeated(MFAes);
         }
      
         private List<List<state>> Divide(List<state> S, char ch)//切割函数
         {
-            List<List<state>> D = new List<List<state>>(new List<state>[1000]);
-            for(int i = 0; i < 1000; i++)
+            List<List<state>> D = new List<List<state>>(new List<state>[MFAmax]);
+            for(int i = 0; i < MFAmax; i++)
             {
                 D[i] = new List<state>();
             }
@@ -516,35 +735,18 @@ namespace test
                             D[index].Add(S[j]);
                             indexs.Add(index);
                         }
+                        else//针对特殊情况如 a ab abb等 在符号边不存在的情况，直接新建一个节点放在最后
+                        {
+                            List<state> temp = new List<state>();
+                            temp.Add(S[j]);
+                            D.Add(temp);
+                            indexs.Add(D.Count-1);
+                        }
 
                     }
                 }
             }
-            /*-------------------------------------------------------------------------*/
-            //if (ch == 'a') {
-            //    for (int i = 0; i < S.Count; i++)
-            //    {
-            //        int index = FindInP(S[i].anext);
-            //        if (index != -1)
-            //        {
-            //            D[index].Add(S[i]);
-            //            indexs.Add(index);
-            //        }
-            //    }
-            //}
-            //else
-            //{
-            //    for (int i = 0; i < S.Count; i++)
-            //    {
-            //        int index = FindInP(S[i].bnext);
-            //        if (index != -1)
-            //        {
-            //            D[index].Add(S[i]);
-            //            indexs.Add(index);
-            //        }
-            //    }
-            //}
-            /*-------------------------------------------------------------------------*/
+
             List<List<state>> saparate = new List<List<state>>();
             Unrepeated(indexs);
             for (int i = 0; i < indexs.Count; i++)
@@ -595,10 +797,10 @@ namespace test
 
             List<state> L = new List<state>();
             List<state> R = new List<state>();
-            for (int i = 0; i < MFAset.CSet.Count; i++)
+            for (int i = DFAb; i < MFAset.CSet.Count; i++)
             {
 
-                if (i != MFAset.CSet.Count - 1)
+                if (DFAes.Contains(i) == false)
                 {
                     state s = new state();
                     s.StateName = i;
@@ -607,10 +809,7 @@ namespace test
                     {
                         s.next[j] = MFAset.CSet[i].next[j];
                     }
-                    /*-------------------------------------------------------------------------*/
-                    //s.anext = MFAset.CSet[i].anext;
-                    //s.bnext = MFAset.CSet[i].bnext;
-                    /*-------------------------------------------------------------------------*/
+
                     L.Add(s);
                 }
                 else
@@ -622,10 +821,7 @@ namespace test
                     {
                         s.next[j] = MFAset.CSet[i].next[j];
                     }
-                    /*-------------------------------------------------------------------------*/
-                    //s.anext = MFAset.CSet[i].anext;
-                    //s.bnext = MFAset.CSet[i].bnext;
-                    /*-------------------------------------------------------------------------*/
+
                     R.Add(s);
                 }
 
@@ -690,33 +886,18 @@ namespace test
             {
                 for (int j = 0; j < transymbol.Count; j++)
                 {
-                    edge e = new edge();
-                    e.StartState.StateName = i;
-                    e.TransSymbol = transymbol[j];
-                    e.EndState.StateName = C.CSet[i].next[j];
-                    c.EdgeSet.Add(e);
+                    if (C.CSet[i].next[j] != -2)
+                    {
+                        edge e = new edge();
+                        e.StartState.StateName = i;
+                        e.TransSymbol = transymbol[j];
+                        e.EndState.StateName = C.CSet[i].next[j];
+                        c.EdgeSet.Add(e);
+                    }
+                    
                 }
             }
-            /*-------------------------------------------------------------------------*/
 
-            //for (int i = 0; i < C.CSet.Count; i++)
-            //{
-            //    edge e = new edge();
-            //    e.StartState.StateName = i;
-            //    e.TransSymbol = 'a';
-            //    e.EndState.StateName = C.CSet[i].anext;
-            //    c.EdgeSet.Add(e);
-            //}
-
-            //for (int i = 0; i < C.CSet.Count; i++)
-            //{
-            //    edge e = new edge();
-            //    e.StartState.StateName = i;
-            //    e.TransSymbol = 'b';
-            //    e.EndState.StateName = C.CSet[i].bnext;
-            //    c.EdgeSet.Add(e);
-            //}
-            /*-------------------------------------------------------------------------*/
             c.StartState.StateName = 0;
             c.EndState.StateName = C.CSet.Count - 1;
             c.EdgeCount = c.EdgeSet.Count;
@@ -1012,7 +1193,7 @@ namespace test
             return NewCell;
         }//'*'的运算
 
-       
+
     }
 
 
@@ -1078,6 +1259,10 @@ namespace test
 
         public int JoinNew(TSet T)//检查集合是否已经存在，需不需要加入
         {
+            if (T.tSet.Count == 0)
+            {
+                return -2;
+            }
             for(int i = 0; i < CSet.Count; i++)
             {
                 //if (CSet[i].tSet.Equals(T) == true)
