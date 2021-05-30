@@ -35,50 +35,58 @@ namespace test
             DialogResult result = openFileDialog1.ShowDialog();//显示对话框接返回值
             if (result == DialogResult.OK)
             {
-                string CodeText = RWStream.ReadFile(openFileDialog1.FileName);
-                string[] CodePart = CodeText.Split('\n');
-
-                
-
-                string []nbstr = CodePart[0].Split(new char[] { '开', '始', '符', ':' ,';'});
-                NFAb = Convert.ToInt32(nbstr[1]);
-                string []nestr = CodePart[1].Split(new char[] { '终', '结', '符', ':' });
-                NFAe = Convert.ToInt32(nestr[1]);
-                string []s = CodePart[2].Split(new char[] { '符', '号', '集', ':' });
-                string []ss= s[1].Split(';');
-
-                NFA.EdgeSet.Clear();
-                NFA.StartState.StateName = NFAb;
-                NFA.EndState.StateName = NFAe;
-                transymbol.Clear();
-
-                for(int i = 0; i < ss.Length; i++)
+                try
                 {
-                    char []c = ss[i].ToCharArray();
-                    if ('a' <= c[0] && c[0] <= 'z')
+                    string CodeText = RWStream.ReadFile(openFileDialog1.FileName);
+                    string[] CodePart = CodeText.Split('\n');
+
+
+
+                    string[] nbstr = CodePart[0].Split(new char[] { '开', '始', '符', ':', ';' });
+                    NFAb = Convert.ToInt32(nbstr[1]);
+                    string[] nestr = CodePart[1].Split(new char[] { '终', '结', '符', ':' });
+                    NFAe = Convert.ToInt32(nestr[1]);
+                    string[] s = CodePart[2].Split(new char[] { '符', '号', '集', ':' });
+                    string[] ss = s[1].Split(';');
+
+                    NFA.EdgeSet.Clear();
+                    NFA.StartState.StateName = NFAb;
+                    NFA.EndState.StateName = NFAe;
+                    transymbol.Clear();
+
+                    for (int i = 0; i < ss.Length; i++)
                     {
-                        transymbol.Add(c[0]);
+                        char[] c = ss[i].ToCharArray();
+                        if ('a' <= c[0] && c[0] <= 'z')
+                        {
+                            transymbol.Add(c[0]);
+                        }
                     }
+
+                    for (int i = 3; i < CodePart.Length; i++)
+                    {
+                        string[] edgeCh = CodePart[i].Split('\t');
+                        edge newEdge = new edge();
+                        newEdge.StartState.StateName = Convert.ToInt32(edgeCh[0]);
+                        newEdge.TransSymbol = Convert.ToChar(edgeCh[1]);
+                        newEdge.EndState.StateName = Convert.ToInt32(edgeCh[2]);
+                        NFA.EdgeSet.Add(newEdge);
+                    }
+                    NFA.EdgeCount = NFA.EdgeSet.Count;
+                    //richTextBox1.Text = RWStream.ReadFile(openFileDialog1.FileName);
+                    WriteNFA();
+                    READFILE = true;
+                    char[] ch = new char[1];
+                    NFAToDFA(ch);
+                    MFAmax = DFAe + 1;
+                    DFAToMFA(ch);
+                    READFILE = false;
+                }
+                catch(Exception)
+                {
+                    MessageBox.Show("文件格式错误，请检查");
                 }
 
-                for(int i = 3; i < CodePart.Length; i++)
-                {
-                    string []edgeCh = CodePart[i].Split('\t');
-                    edge newEdge = new edge();
-                    newEdge.StartState.StateName = Convert.ToInt32(edgeCh[0]);
-                    newEdge.TransSymbol = Convert.ToChar(edgeCh[1]);
-                    newEdge.EndState.StateName = Convert.ToInt32(edgeCh[2]);
-                    NFA.EdgeSet.Add(newEdge);
-                }
-                NFA.EdgeCount = NFA.EdgeSet.Count;
-                //richTextBox1.Text = RWStream.ReadFile(openFileDialog1.FileName);
-                WriteNFA();
-                READFILE = true;
-                char []ch = new char[1];
-                NFAToDFA(ch);
-                MFAmax = DFAe + 1;
-                DFAToMFA(ch);
-                READFILE = false;
 
             }
         }
@@ -88,87 +96,94 @@ namespace test
             DialogResult result = openFileDialog1.ShowDialog();//显示对话框接返回值
             if (result == DialogResult.OK)
             {
+                try
+                {
+                    string CodeText = RWStream.ReadFile(openFileDialog1.FileName);
+                    string[] CodePart = CodeText.Split('\n');
 
-                string CodeText = RWStream.ReadFile(openFileDialog1.FileName);
-                string[] CodePart = CodeText.Split('\n');
+                    DFA.EdgeSet.Clear();
+                    DFA.StartState.StateName = DFAb;
+                    DFA.EndState.StateName = DFAe;
+                    transymbol.Clear();
+                    MFAset = new CloseSet();
+                    MFAes.Clear();
+                    DFAes.Clear();
 
-                DFA.EdgeSet.Clear();
-                DFA.StartState.StateName = DFAb;
-                DFA.EndState.StateName = DFAe;
-                transymbol.Clear();
-                MFAset = new CloseSet();
-                MFAes.Clear();
-                DFAes.Clear();
+                    string[] nbstr = CodePart[0].Split(new char[] { ':', ';' });
+                    DFAb = Convert.ToInt32(nbstr[1]);
+                    string[] nestr = CodePart[1].Split(new char[] { ':', '\r' });
+                    string[] nestrs = nestr[1].Split(';');
+                    for (int i = 0; i < nestrs.Length; i++)
+                    {
+                        if (nestrs[i] != "")
+                            DFAes.Add(Convert.ToInt32(nestrs[i]));
+                    }
+                    string[] countstr = CodePart[2].Split(new char[] { ':' });
+                    int counts = Convert.ToInt32(countstr[1]);
+                    MFAmax = counts;
+                    string[] s = CodePart[3].Split(new char[] { ':' });
+                    string[] ss = s[1].Split(';');
+
+
+
+
+                    for (int i = 0; i < ss.Length; i++)
+                    {
+                        char[] c = ss[i].ToCharArray();
+                        if ('a' <= c[0] && c[0] <= 'z')
+                        {
+                            transymbol.Add(c[0]);
+                        }
+                    }
+
+                    for (int i = 4; i < CodePart.Length; i++)//建立dfa
+                    {
+                        if (CodePart[i] != "")
+                        {
+                            string[] edgeCh = CodePart[i].Split('\t');
+                            edge newEdge = new edge();
+                            newEdge.StartState.StateName = Convert.ToInt32(edgeCh[0]);
+                            newEdge.TransSymbol = Convert.ToChar(edgeCh[1]);
+                            newEdge.EndState.StateName = Convert.ToInt32(edgeCh[2]);
+                            DFA.EdgeSet.Add(newEdge);
+                        }
+
+                    }
+
+                    for (int i = 0; i < counts + 1; i++)
+                    {
+                        TSet newSet = new TSet();
+                        for (int j = 0; j < transymbol.Count; j++)
+                        {
+                            newSet.next[j] = -2;
+                        }
+                        MFAset.CSet.Add(newSet);
+                    }
+                    for (int i = 4; i < CodePart.Length; i++)
+                    {
+                        string[] edgeCh = CodePart[i].Split(new char[] { ':', '\r', '\t' });
+                        if (edgeCh[2] != "")
+                        {
+                            MFAset.CSet[Convert.ToInt32(edgeCh[0])]
+                              .next[transymbol.IndexOf(Convert.ToChar(edgeCh[1]))] = Convert.ToInt32(edgeCh[2]);
+                        }
+
+
+                    }
+
+                    DFA.EdgeCount = DFA.EdgeSet.Count;
+                    //richTextBox1.Text = RWStream.ReadFile(openFileDialog1.FileName);
+                    WriteDFA();
+                    READFILE = true;
+                    char[] ch = new char[1];
+                    DFAToMFA(ch);
+                    READFILE = false;
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("文件格式错误，请检查");
+                }
                 
-                string[] nbstr = CodePart[0].Split(new char[] { ':' ,';'});
-                DFAb = Convert.ToInt32(nbstr[1]);
-                string[] nestr = CodePart[1].Split(new char[] { ':', '\r' });
-                string[] nestrs = nestr[1].Split(';');
-                for(int i = 0;i < nestrs.Length ; i++)
-                {
-                    if(nestrs[i] != "")
-                    DFAes.Add(Convert.ToInt32(nestrs[i]));
-                }
-                string[] countstr = CodePart[2].Split(new char[] {  ':' });
-                int counts = Convert.ToInt32(countstr[1]);
-                MFAmax = counts;
-                string[] s = CodePart[3].Split(new char[] {  ':' });
-                string[] ss = s[1].Split(';');
-
-
-
-
-                for (int i = 0; i < ss.Length; i++)
-                {
-                    char[] c = ss[i].ToCharArray();
-                    if ('a' <= c[0] && c[0] <= 'z')
-                    {
-                        transymbol.Add(c[0]);
-                    }
-                }
-
-                for (int i = 4; i < CodePart.Length; i++)//建立dfa
-                {
-                    if (CodePart[i] != "")
-                    {
-                        string[] edgeCh = CodePart[i].Split('\t');
-                        edge newEdge = new edge();
-                        newEdge.StartState.StateName = Convert.ToInt32(edgeCh[0]);
-                        newEdge.TransSymbol = Convert.ToChar(edgeCh[1]);
-                        newEdge.EndState.StateName = Convert.ToInt32(edgeCh[2]);
-                        DFA.EdgeSet.Add(newEdge);
-                    }
-                    
-                }
-                
-                for(int i = 0; i < counts+1; i++)
-                {
-                    TSet newSet = new TSet();
-                    for(int j = 0; j < transymbol.Count; j++)
-                    {
-                        newSet.next[j] = -2;
-                    }
-                    MFAset.CSet.Add(newSet);
-                }
-                for (int i = 4; i < CodePart.Length; i++)
-                {
-                    string[] edgeCh = CodePart[i].Split(new char[] { ':', '\r' ,'\t'});
-                    if (edgeCh[2] != "")
-                    {
-                        MFAset.CSet[Convert.ToInt32(edgeCh[0])]
-                          .next[transymbol.IndexOf(Convert.ToChar(edgeCh[1]))] = Convert.ToInt32(edgeCh[2]);
-                    }
-                    
- 
-                }
-                
-                DFA.EdgeCount = DFA.EdgeSet.Count;
-                //richTextBox1.Text = RWStream.ReadFile(openFileDialog1.FileName);
-                WriteDFA();
-                READFILE = true;
-                char[] ch = new char[1];
-                DFAToMFA(ch);
-                READFILE = false;
             }
         }
         //验证表达式的按钮
@@ -771,7 +786,7 @@ namespace test
             return -1;
         }
 
-        public void Unrepeated(List<int> indexs)//去除子集中重复的项
+        private void Unrepeated(List<int> indexs)//去除子集中重复的项
         {
 
             int count = indexs.Count;
