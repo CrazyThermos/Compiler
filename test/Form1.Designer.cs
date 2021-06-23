@@ -291,6 +291,7 @@ namespace test
             this.toolStripButton9.Name = "toolStripButton9";
             this.toolStripButton9.Size = new System.Drawing.Size(81, 24);
             this.toolStripButton9.Text = "LR分析";
+            this.toolStripButton9.Click += new System.EventHandler(this.toolStripButton9_Click);
             // 
             // groupBox1
             // 
