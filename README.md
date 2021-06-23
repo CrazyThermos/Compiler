@@ -10,7 +10,7 @@
   
   - LL(1)文法分析(First集 Follow集 Select集 句子分析) 
   
-  - LR文法分析(可能有)
+  - LR(0) SLR(1)文法分析
 
   ## bug: 
     
