@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -70,8 +71,19 @@ namespace test
             Vt.Clear();
             GrammarPairs.Clear();
             string text = richTextBox1.Text;
+            text = Regex.Replace(text, @" ","");
             string []texts = text.Split('\n');
-            foreach(string i in texts)//生成文法相关信息
+            //foreach (string s in texts)
+            //{
+            //    foreach (char c in s)
+            //    {
+            //        if(c == ' ' || c == '\t')
+            //        {
+            //            s.Remove(s.IndexOf(c), 1);
+            //        }
+            //    }
+            //}
+            foreach (string i in texts)//生成文法相关信息
             {
                 
                 if(i != "")//生成相应的文法
@@ -124,7 +136,7 @@ namespace test
                     else
                     {
 
-                        if (!Vn.Contains(splits[0].ToCharArray()[0])) { 
+                        if (!Vn.Contains(splits[0].ToCharArray()[0])) { //说明该非终结符还未创建Grammar
                             Vn.Add(splits[0].ToCharArray()[0]);
                             List<string> rights1 = new List<string>();
                             List<string> rights2 = new List<string>();
@@ -137,7 +149,7 @@ namespace test
                         }
                         else
                         {
-                            for (int k =0; k<Grammars.Count; k++)
+                            for (int k =0; k<Grammars.Count; k++) //说明该非终结符已经创建Grammar，直接加入
                             {
                                 if (Grammars[k].left == splits[0].ToCharArray()[0])
                                 {
@@ -175,7 +187,7 @@ namespace test
             ShowFollowSet();
             MakeSelectSet();
             ShowForecast();
-            
+            isLL1();
         }
         //测试
         private void button5_Click(object sender, EventArgs e)
@@ -187,6 +199,11 @@ namespace test
         {
             if(textBox1.Text != "")
             {
+                if (Forecast.Rows.Count == 0)
+                {
+                    button4_Click(sender, e);
+                }
+                
                 MakeAnalysis();
             }
             else
@@ -631,8 +648,48 @@ namespace test
 
                 //}
             }
+           
         }
 
+        private void isLL1()
+        {
+            bool b = true;
+            foreach (Grammar g in Grammars)
+            {
+                foreach (List<char> list in g.rightSELECT)
+                {
+                    List<char> temp = new List<char>();
+                    foreach (char c in list)
+                    {
+                        if (temp.IndexOf(c) != -1)
+                        {
+                            temp.Add(c);
+                        }
+                        else
+                        {
+                            b = false;
+                            MessageBox.Show("该文法不是LL（1）");
+                            break;
+                        }
+                        
+                    }
+                    if (!b)
+                    {
+                        break;
+                    }
+                }
+                if (!b)
+                {
+                    break;
+                }
+            }
+
+            if (b == true)
+            {
+                MessageBox.Show("该文法是LL（1）");
+            }
+
+        }
         private void ShowForecast()
         {
             Forecast.Columns.Clear();
@@ -648,7 +705,7 @@ namespace test
                 newColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 Forecast.Columns.Add(newColumn);
             }
-            foreach (Grammar g in Grammars)
+            foreach (Grammar g in Grammars)//加入行
             {
                 DataGridViewRow newRow = new DataGridViewRow();
                 DataGridViewTextBoxCell left = new DataGridViewTextBoxCell();
@@ -676,25 +733,22 @@ namespace test
 
         private void MakeAnalysis()
         {
+
             Analysis.Rows.Clear();
             string text = textBox1.Text;
             Stack<char> AnalysisStack = new Stack<char>();
             List<char> InputList = new List<char>();
             AnalysisStack.Push('#');
-            AnalysisStack.Push(begin);
+            AnalysisStack.Push(begin);//分析栈的初始化
             InputList.AddRange(textBox1.Text.ToCharArray());
-            InputList.Add('#');
+            InputList.Add('#');//输入串的初始化
             int stepnum = 0;//步骤数
             bool end = false;
-            Forecast.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            //必须设置SortMode 为NotSortable，否则设置的单元格样式不会生效
-            Forecast.Columns[2].SortMode = DataGridViewColumnSortMode.NotSortable;
 
-
-            foreach (char c in text)
+            foreach (char c in text)//先对句子的每一个进行匹配消除
             {
                 int index = 0;
-                foreach (DataGridViewTextBoxColumn column in Forecast.Columns)
+                foreach (DataGridViewTextBoxColumn column in Forecast.Columns)//找到当前匹配字符在预测表的哪一列
                 {
                     if (column.HeaderText == c.ToString())
                     {
@@ -706,12 +760,12 @@ namespace test
                 while (true) 
                 { 
                 
-                    char stackhead = AnalysisStack.Peek();
-                    if (Vn.Contains(stackhead)) 
+                    char stackhead = AnalysisStack.Peek();//判断分析栈的栈顶符号为何种情况
+                    if (Vn.Contains(stackhead))//如果栈顶符号为终结符
                     {
                         int pos;
                         GrammarPairs.TryGetValue(stackhead, out pos);
-                        if (Forecast.Rows[pos].Cells[index].Value != null)
+                        if (Forecast.Rows[pos].Cells[index].Value != null)//如果该非终结符有推出匹配字符的产生式则输出该步骤
                         {
                             stepnum++;//步骤数++
                             DataGridViewRow analRow = new DataGridViewRow();
@@ -729,17 +783,17 @@ namespace test
                             analRow.Cells.Add(Cell4);
                             Analysis.Rows.Add(analRow);
                             char[] fit = Forecast.Rows[pos].Cells[index].Value.ToString().ToCharArray();
-                            Array.Reverse(fit);//将字符串反转入栈
+                            Array.Reverse(fit);//将字符串反转
                             AnalysisStack.Pop();
                             for (int i = 0; i<fit.Count() - 2; i++)
                             {
-                                AnalysisStack.Push(fit[i]);
+                                AnalysisStack.Push(fit[i]);//把所用的产生式的右部加入栈
                             }
                                 
                         }
-                        else
+                        else//如果该非终结符没有有推出匹配字符的产生式则判断，非终结符是否可以推出空
                         {
-                            if (Grammars[pos].isEmpty == 1)
+                            if (Grammars[pos].isEmpty == 1)//可以推出空就继续输出该步骤，并出栈
                             {
                                 stepnum++;//步骤数++
                                 DataGridViewRow analRow = new DataGridViewRow();
@@ -758,7 +812,7 @@ namespace test
                                 Analysis.Rows.Add(analRow);
                                 AnalysisStack.Pop();
                             }
-                            else if(Grammars[pos].isEmpty == 0)
+                            else if(Grammars[pos].isEmpty == 0)//如果推不出空，那么分析终止，失败
                             {
                                 stepnum++;//步骤数++
                                 DataGridViewRow analRow = new DataGridViewRow();
@@ -782,7 +836,7 @@ namespace test
                         
                         //}
                     }
-                    else if(Vt.Contains(stackhead) && stackhead == c)
+                    else if(Vt.Contains(stackhead) && stackhead == c)//如果栈顶元素为终结符且与匹配字符相同那么输出该步骤
                     {
                         stepnum++;//步骤数++
                         DataGridViewRow analRow = new DataGridViewRow();
@@ -802,7 +856,7 @@ namespace test
                         AnalysisStack.Pop();
                         break;
                     }
-                    else//该字符既不是终结符也不是非终结符
+                    else//该字符既不是终结符也不是非终结符，直接失败
                     {
                         stepnum++;//步骤数++
                         DataGridViewRow analRow = new DataGridViewRow();
@@ -823,7 +877,7 @@ namespace test
                         break;
                     }
                 }
-                if (end)
+                if (end)//分析已经失败直接跳出
                 {
                     MessageBox.Show("输入串不是文法的句子");
                     break;
@@ -831,15 +885,16 @@ namespace test
                 InputList.RemoveAt(0);
             }
 
-            if (!end) {
-                while (AnalysisStack.Count > 1)
+            if (!end)
+            {
+                while (AnalysisStack.Count > 1)//继续处理分析栈中剩下的字符,因为输入串已经匹配玩，需要剩下的字符为空才对
                 {
                     char stackhead = AnalysisStack.Peek();
                     if (Vn.Contains(stackhead))
                     {
                         int pos;
                         GrammarPairs.TryGetValue(stackhead, out pos);
-                        if (Grammars[pos].isEmpty == 1)
+                        if (Grammars[pos].isEmpty == 1)//可以推出空
                         {
                             stepnum++;//步骤数++
                             DataGridViewRow analRow = new DataGridViewRow();
@@ -858,7 +913,7 @@ namespace test
                             Analysis.Rows.Add(analRow);
                             AnalysisStack.Pop();
                         }
-                        else if (Grammars[pos].isEmpty == 0)
+                        else if (Grammars[pos].isEmpty == 0)//不可以推出空直接失败
                         {
                             stepnum++;//步骤数++
                             DataGridViewRow analRow = new DataGridViewRow();
@@ -875,10 +930,11 @@ namespace test
                             analRow.Cells.Add(Cell3);
                             analRow.Cells.Add(Cell4);
                             Analysis.Rows.Add(analRow);
+                            end = true;
                             break;
                         }
                     }
-                    else
+                    else//终结符直接失败
                     {
                         stepnum++;//步骤数++
                         DataGridViewRow analRow = new DataGridViewRow();
@@ -895,28 +951,33 @@ namespace test
                         analRow.Cells.Add(Cell3);
                         analRow.Cells.Add(Cell4);
                         Analysis.Rows.Add(analRow);
+                        end = true;
                         break;
                     }
 
                     
                 }
-                stepnum++;//步骤数++
-                DataGridViewRow _analRow = new DataGridViewRow();
-                DataGridViewTextBoxCell _Cell1 = new DataGridViewTextBoxCell();//步骤数
-                DataGridViewTextBoxCell _Cell2 = new DataGridViewTextBoxCell();//分析栈
-                DataGridViewTextBoxCell _Cell3 = new DataGridViewTextBoxCell();//剩余输入串
-                DataGridViewTextBoxCell _Cell4 = new DataGridViewTextBoxCell();//推导所用产生式
-                _Cell1.Value = stepnum.ToString();
-                _Cell2.Value = String.Join("", AnalysisStack.ToArray().Reverse());
-                _Cell3.Value = String.Join("", InputList.ToArray());
-                _Cell4.Value = "接受";
-                _analRow.Cells.Add(_Cell1);
-                _analRow.Cells.Add(_Cell2);
-                _analRow.Cells.Add(_Cell3);
-                _analRow.Cells.Add(_Cell4);
-                Analysis.Rows.Add(_analRow);
-                AnalysisStack.Pop();
-                MessageBox.Show("该输入串是文法的句子");
+                if(!end){
+                    //最后说明分析成功
+                    stepnum++;//步骤数++
+                    DataGridViewRow _analRow = new DataGridViewRow();
+                    DataGridViewTextBoxCell _Cell1 = new DataGridViewTextBoxCell();//步骤数
+                    DataGridViewTextBoxCell _Cell2 = new DataGridViewTextBoxCell();//分析栈
+                    DataGridViewTextBoxCell _Cell3 = new DataGridViewTextBoxCell();//剩余输入串
+                    DataGridViewTextBoxCell _Cell4 = new DataGridViewTextBoxCell();//推导所用产生式
+                    _Cell1.Value = stepnum.ToString();
+                    _Cell2.Value = String.Join("", AnalysisStack.ToArray().Reverse());
+                    _Cell3.Value = String.Join("", InputList.ToArray());
+                    _Cell4.Value = "接受";
+                    _analRow.Cells.Add(_Cell1);
+                    _analRow.Cells.Add(_Cell2);
+                    _analRow.Cells.Add(_Cell3);
+                    _analRow.Cells.Add(_Cell4);
+                    Analysis.Rows.Add(_analRow);
+                    AnalysisStack.Pop();
+                    MessageBox.Show("该输入串是文法的句子");
+                }
+                
            
             }
 
@@ -954,6 +1015,7 @@ namespace test
         public List<List<char>> rightSELECT = new List<List<char>>();//该非终结符右部SELECT集
         public List<char> leftSELECT = new List<char>();//该非终结符右部SELECT集的交集作为左部的SELECT集
         public int isEmpty = -1;//能否推出空
+        public int rightBegin = 0;//该非终结符的产生式总的的下标应该从哪开始 计算前面的产生式数量 
         public Grammar(string left,List<string> right)
         {
             
