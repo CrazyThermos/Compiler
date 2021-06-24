@@ -52,7 +52,7 @@ namespace test
         /*-----------------------------------------------------------------------------------*/
         Projects Pr0jects = new Projects();//增广文法的项集集合
         List<Project> Cores = new List<Project>();//内核项（没用到）
-        List<Projects> LR0Collections = new List<Projects>();//项集簇的DFA
+        List<Projects> Collections = new List<Projects>();//项集簇的DFA
         Dictionary<char, int> ActionPairs = new Dictionary<char, int>();
         Dictionary<char, int> GotoPairs = new Dictionary<char, int>();
 
@@ -190,7 +190,7 @@ namespace test
             MakeFollowSet();
             MakeProjects();
             FindAllCores();
-            MakeLR0Collections();
+            MakeCollections();
             ShowStateInfo();
 
             int select = comboBox1.SelectedIndex;
@@ -592,7 +592,7 @@ namespace test
                                 }
 
                             }
-                            else if (i == J.items[j].right.Length - 1 && i == 0)
+                            else if (i == J.items[j].right.Length - 1 && i == 0)//如果只有一个点 那说明符号为空
                             {
                                  pointRight = '$';
                             }
@@ -655,10 +655,10 @@ namespace test
                         {
                             J.Reduction = J.items.Count - 1;
                         }
-                        if (J.Reduction != -1 && J.next.Count !=0)
-                        {
-                            J.Conflict = true;
-                        }
+                        //if (J.Reduction != -1 && J.next.Count !=0)
+                        //{
+                        //    J.Conflict = true;
+                        //}
                         Projects closure = CLOSURE(proj);//对项集簇进行闭包生成
                         foreach (Project clos in closure.items)
                         {
@@ -670,8 +670,25 @@ namespace test
                         }
                         break;
                     }
-                    else if (i == 0)
+                    else if (i == 0 )
                     {
+                        //int index = -1;
+                        //foreach (Grammar g in Grammars)
+                        //{
+                        //    if (g.left == p.left)
+                        //    {
+                        //        foreach (string s in g.right)
+                        //        {
+                        //            if (s == "$")
+                        //            {
+                        //                index = g.rightBegin + g.right.IndexOf(s);
+                        //                break;
+                        //            }
+                        //        }
+                        //        break;
+                        //    }
+                        //}
+                        //J.isEmpty = index;
                         continue;
                     }
                 }
@@ -680,35 +697,35 @@ namespace test
             return J;
         }
 
-        private void MakeLR0Collections()
+        private void MakeCollections()
         {
-            LR0Collections.Clear();
-            LR0Collections.Add(CLOSURE(Cores[0]));//加入第一个项集簇
+            Collections.Clear();
+            Collections.Add(CLOSURE(Cores[0]));//加入第一个项集簇
             List<char> ch = new List<char>();//项集簇的所有文法符号
             while (true)
             {
-                int before = LR0Collections.Count;
-                for (int i = 0; i < LR0Collections.Count; i++)
+                int before = Collections.Count;
+                for (int i = 0; i < Collections.Count; i++)
                 {
-                    if (LR0Collections[i].gotoed == true)//已经使用GOTO函数的项集簇直接跳过
+                    if (Collections[i].gotoed == true)//已经使用GOTO函数的项集簇直接跳过
                     {
                         continue;
                     }
                     else
                     {
-                        LR0Collections[i].gotoed = true;
+                        Collections[i].gotoed = true;
                     }
 
                     ch.Clear();
-                    for (int j = 0; j < LR0Collections[i].items.Count; j++)//找该项集簇的所有文法符号
+                    for (int j = 0; j < Collections[i].items.Count; j++)//找该项集簇的所有文法符号
                     {
-                        for(int k = 0; k < LR0Collections[i].items[j].right.Length; k++)
+                        for(int k = 0; k < Collections[i].items[j].right.Length; k++)
                         {
-                            if (k!= LR0Collections[i].items[j].right.Length-1 && LR0Collections[i].items[j].right[k] == '.')
+                            if (k!= Collections[i].items[j].right.Length-1 && Collections[i].items[j].right[k] == '.')
                             {
-                                if (!ch.Contains(LR0Collections[i].items[j].right[k + 1]))
+                                if (!ch.Contains(Collections[i].items[j].right[k + 1]))
                                 {
-                                    ch.Add(LR0Collections[i].items[j].right[k + 1]);
+                                    ch.Add(Collections[i].items[j].right[k + 1]);
                                 }
                             }
                         }
@@ -717,27 +734,29 @@ namespace test
 
                     foreach (char c in ch)//对符号集的每个符号进行goto操作
                     {
-                        Projects projs = GOTO(LR0Collections[i], c);
-                        int ifexist = ExistInCollection(LR0Collections, projs);//判断该项集簇是否已经存在在DFA中
+                        Projects projs = GOTO(Collections[i], c);
+                        int ifexist = ExistInCollection(Collections, projs);//判断该项集簇是否已经存在在DFA中
+                        int emptypos = EmptyInCollection(projs);
+                        projs.EmptyPos = emptypos;
                         if (projs.items.Count > 0 && ifexist == -1)
                         {
                             path path = new path();
-                            path.num = LR0Collections.Count;
+                            path.num = Collections.Count;
                             path.symbol = c;
-                            LR0Collections[i].next.Add(path);
-                            LR0Collections.Add(projs);//不存在则插入并且在next中加入path
+                            Collections[i].next.Add(path);
+                            Collections.Add(projs);//不存在则插入并且在next中加入path
                         }
                         else if (projs.items.Count > 0 && ifexist > -1)
                         {
                             path path = new path();
                             path.num = ifexist;
                             path.symbol = c;
-                            LR0Collections[i].next.Add(path);//存在则只更改项集簇的path
+                            Collections[i].next.Add(path);//存在则只更改项集簇的path
                         }
                     }
                 }
 
-                int after = LR0Collections.Count;
+                int after = Collections.Count;
                 if(before == after)
                 {
                     break;
@@ -745,6 +764,33 @@ namespace test
             }
         }
 
+        private int EmptyInCollection(Projects projs)//在项目集中寻找是否存在内核项指向空的情况，如果有则返回项目原来的句子下标
+        {
+            int index = -1;
+            char head = projs.items[0].left;
+            if (projs.items.Count > 0)
+            {
+                foreach (Project p in projs.items)
+                {
+                    if (p.right == "." && p.left == head)
+                    {
+                        int pos;
+                        GrammarPairs.TryGetValue(head, out pos);
+                        foreach (string s in Grammars[pos].right)
+                        {
+                            if (s == "$")
+                            {
+                                index = Grammars[pos].rightBegin + Grammars[pos].right.IndexOf(s);
+                                break;
+                            }
+                        }
+                        break;
+                       
+                    }
+                }
+            }
+            return index;
+        }
         private int ExistInCollection(List<Projects> collection, Projects projs)//判断该项集簇是否已经存在在DFA中
         {
 
@@ -768,15 +814,15 @@ namespace test
             return index;
         }
 
-        private void ShowStateInfo()
+        private void ShowStateInfo()//项目集显示
         {
             StateInfo.Rows.Clear();
-            foreach (Projects ps in LR0Collections)
+            foreach (Projects ps in Collections)
             {
                 DataGridViewRow newRow = new DataGridViewRow();
                 DataGridViewTextBoxCell newCellnum = new DataGridViewTextBoxCell();
                 DataGridViewTextBoxCell newCellset = new DataGridViewTextBoxCell();
-                newCellnum.Value = LR0Collections.IndexOf(ps);
+                newCellnum.Value = Collections.IndexOf(ps);
                 string str = "";
                 foreach (Project p in ps.items)
                 {
@@ -817,11 +863,11 @@ namespace test
                 GotoPairs.Add(c, AnalysisTable.Columns.Count - 1);
             }
 
-            foreach (Projects ps in LR0Collections)
+            foreach (Projects ps in Collections)
             {
                 DataGridViewRow newRow = new DataGridViewRow();
                 DataGridViewTextBoxCell statenum = new DataGridViewTextBoxCell();
-                statenum.Value = LR0Collections.IndexOf(ps).ToString();
+                statenum.Value = Collections.IndexOf(ps).ToString();
                 newRow.Cells.Add(statenum);
                
                 
@@ -843,6 +889,10 @@ namespace test
                         if (!findph)
                         {
                             newCell.Value = " ";
+                        }
+                        if (c == '#' && ps.EmptyPos != -1)//项目集内核项中有指向空的情况要加上一个规约操作 LR(0)中未必有此操作
+                        {
+                            newCell.Value = "r" + ps.EmptyPos.ToString();
                         }
                         newRow.Cells.Add(newCell);
                     }
@@ -927,16 +977,16 @@ namespace test
                 GotoPairs.Add(c,AnalysisTable.Columns.Count - 1);
             }
 
-            foreach (Projects ps in LR0Collections)
+            foreach (Projects ps in Collections)
             {
                 DataGridViewRow newRow = new DataGridViewRow();
                 DataGridViewTextBoxCell statenum = new DataGridViewTextBoxCell();
-                statenum.Value = LR0Collections.IndexOf(ps).ToString();
+                statenum.Value = Collections.IndexOf(ps).ToString();
                 newRow.Cells.Add(statenum);
 
                 if (ps.Reduction == -1)//如果'.'不在在产生式的最右侧那么进行移进操作 否则进行规约
                 {
-                    foreach (char c in Vt)
+                    foreach (char c in Vt)//生成action表中的移进项目
                     {
                         DataGridViewTextBoxCell newCell = new DataGridViewTextBoxCell();
                         bool findph = false;
@@ -953,13 +1003,17 @@ namespace test
                         {
                             newCell.Value = " ";
                         }
+                        if (c == '#' && ps.EmptyPos != -1)//项目集内核项中有指向空的情况要加上一个规约操作
+                        {
+                            newCell.Value = "r" + ps.EmptyPos.ToString();
+                        }
                         newRow.Cells.Add(newCell);
                     }
-                    foreach (char c in Vn)
+                    foreach (char c in Vn)//生成goto表
                     {
                         DataGridViewTextBoxCell newCell = new DataGridViewTextBoxCell();
                         bool find = false;
-                        foreach (path ph in ps.next)
+                        foreach (path ph in ps.next)//在路径中查找非终结符
                         {
                             if (ph.symbol == c)
                             {
@@ -976,21 +1030,21 @@ namespace test
                     }
                     AnalysisTable.Rows.Add(newRow);
                 }
-                else
+                else//主要的规约操作
                 {
                     int pos;
                     GrammarPairs.TryGetValue(ps.items[ps.Reduction].left, out pos);
-                    string compare = String.Copy(ps.items[ps.Reduction].right);
+                    string compare = String.Copy(ps.items[ps.Reduction].right);//获取规约的句子右端
 
                     compare = compare.Remove(compare.IndexOf('.'), 1);
-                    int Inright = Grammars[pos].right.IndexOf(compare);//right在内部的序号
-                    int rightindex = Inright + Grammars[pos].rightBegin;//内部序号 + 外部序号 = 实际的序号
+                    int Inright = Grammars[pos].right.IndexOf(compare);//规约的句子right在内部的序号
+                    int rightindex = Inright + Grammars[pos].rightBegin;//规约的句子内部序号 + 规约的句子外部序号 = 规约的句子实际的序号
 
                     foreach (char c in Vt)
                     {
                         DataGridViewTextBoxCell newCell = new DataGridViewTextBoxCell();
                         newCell.Value = " ";
-                        if (rightindex != 0)
+                        if (rightindex != 0)//不用第一个句子 则视为规约
                         {
                             if (Grammars[pos].FOLLOW.Contains(c))
                             {
@@ -998,7 +1052,7 @@ namespace test
                             }
 
                         }
-                        else
+                        else//如果用第一句规约说明已经接受这个句子了
                         {  
                             if (c == '#')
                             {
@@ -1082,12 +1136,16 @@ namespace test
                         for (int i = 0; i < proj.right.Length; i++)//根据规约右部的长度对状态栈和符号栈进行删除
                         {
                             stateStack.Pop();
-                            if (proj.right[proj.right.Length - i -1] == symbolStack.Peek()) {
+                            if (proj.right[proj.right.Length - i - 1] != '$' && proj.right[proj.right.Length - i -1] == symbolStack.Peek()) {
                                 symbolStack.Pop();
+                            }
+                            else if (proj.right[proj.right.Length - i - 1] == '$')//对空的情况进行单独处理
+                            {
+                                continue;
                             }
                             else
                             {
-                                MessageBox.Show("规约失败");
+                                MessageBox.Show("规约失败" + String.Format("{0}{1}",proj.left,proj.right));;
                                 Cell5.Value = "规约失败";
                                 end = true;
                                 break;
@@ -1127,6 +1185,7 @@ namespace test
                 else
                 {
                     MessageBox.Show("....");
+                    break;
                 }
                 if (end)
                 {
@@ -1145,7 +1204,7 @@ namespace test
         }
 
 
-        private Project Statute(int num)
+        private Project Statute(int num)//寻找规约句子的函数
         {
             Project proj = new Project();
             for (int i = Grammars.Count -1; i >= 0; i--)
@@ -1170,9 +1229,9 @@ namespace test
     {
         public List<Project> items = new List<Project>();
         public List<path> next = new List<path>();
-        public bool gotoed = false;
-        public int Reduction = -1;
-        public bool Conflict = false;
+        public bool gotoed = false;//项目集是不是已经进行GOTO操作了
+        public int Reduction = -1;//项目集是否要进行规约
+        public int EmptyPos = -1;//项目集中是否存在空，如果有则保存这个句子的位置，如项目集包含S->. 则保存S->$的位置
         public void Add(Project p)
         {
             if (!items.Contains(p))
