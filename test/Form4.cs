@@ -8,6 +8,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+//using Microsoft.JScript;
+using Microsoft.JScript.Vsa;
+//using Microsoft.Vsa;
 
 namespace test
 {
@@ -80,7 +83,8 @@ namespace test
                 
                 if (i != "")//生成相应的文法
                 {
-                    string[] splits = i.Split(new char[] { '-', '>' }, StringSplitOptions.RemoveEmptyEntries);
+                    //string[] splits = i.Split(new char[] { '-', '>' }, StringSplitOptions.RemoveEmptyEntries);
+                    string[] splits = Regex.Split(i,"->",RegexOptions.IgnorePatternWhitespace);
                     //string[] splitRight = splits[1].Split('|');
                     int o_r = -1;
                     foreach (char j in splits[1])
@@ -220,7 +224,19 @@ namespace test
                 MessageBox.Show("请输入句子");
             }
         }
+        //语法制导翻译
+        private void button7_Click(object sender, EventArgs e)
+        {
+            groupBox4.Text = "语法制导";
+            if (StepTable.Columns.Count != 6)
+            {
+                DataGridViewTextBoxColumn Semantic = new DataGridViewTextBoxColumn();
+                Semantic.HeaderText = "语义栈";
+                StepTable.Columns.Add(Semantic);
+            }
 
+            DoTranslateAnalysis();
+        }
         private void MakeisEmpty()//编译原理4.2节判断非终结符是否能推出空串
         {
             //List<Grammar> tool = new List<Grammar>();
@@ -845,7 +861,7 @@ namespace test
             title.HeaderText = "状态";
             title.AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader;
             AnalysisTable.Columns.Add(title);
-            Vt.Add('$');
+            Vt.Add('#');
             foreach (char c in Vt)
             {
                 DataGridViewTextBoxColumn newColumn = new DataGridViewTextBoxColumn();
@@ -936,7 +952,7 @@ namespace test
                         else
                         {
                             newCell.Value = " ";
-                            if (c == '$')
+                            if (c == '#')
                             {
                                 newCell.Value = "acc";
                             }
@@ -1093,7 +1109,7 @@ namespace test
             }
             else
             {
-                Vt.Add('$');
+                Vt.Add('#');
             }
 
             bool end = false;
@@ -1202,8 +1218,178 @@ namespace test
             Vt.Remove('$');
 
         }
+        
+        private void DoTranslateAnalysis()
+        {
+            StepTable.Rows.Clear();
+            string inputText = textBox1.Text;
+            Stack<int> stateStack = new Stack<int>();
+            Stack<char> symbolStack = new Stack<char>();
+            Stack<string> semanticStack = new Stack<string>();
+            stateStack.Push(0);
+            symbolStack.Push('#');
+            semanticStack.Push("-");
+            inputText = inputText.Insert(inputText.Length, "#");
+            int stepnum = 0;
+            if (comboBox1.SelectedIndex == 1)
+            {
+                Vt.Add('#');
+            }
+            else
+            {
+                Vt.Add('#');
+            }
+
+            bool end = false;
+            while (true)
+            {
+                stepnum++;
+                if (Vt.Contains(inputText[0]) || '0' <= inputText[0] && inputText[0] <= '9')//Action表中的操作
+                {
+
+                    DataGridViewRow stepRow = new DataGridViewRow();
+                    DataGridViewTextBoxCell Cell1 = new DataGridViewTextBoxCell();//步骤数
+                    DataGridViewTextBoxCell Cell2 = new DataGridViewTextBoxCell();//状态栈
+                    DataGridViewTextBoxCell Cell3 = new DataGridViewTextBoxCell();//符号栈
+                    DataGridViewTextBoxCell Cell4 = new DataGridViewTextBoxCell();//输入串
+                    DataGridViewTextBoxCell Cell5 = new DataGridViewTextBoxCell();//推导所用产生式
+                    DataGridViewTextBoxCell Cell6 = new DataGridViewTextBoxCell();//语义栈
+                    int pos;
+                    if ('0'<= inputText[0] && inputText[0] <= '9')
+                    {
+                        ActionPairs.TryGetValue('d', out pos);
+                    }
+                    else
+                    {
+                        ActionPairs.TryGetValue(inputText[0], out pos);
+                    }
+                    
+                    string step = AnalysisTable.Rows[stateStack.Peek()].Cells[pos].Value.ToString();
+                    Cell1.Value = stepnum.ToString();
+                    Cell2.Value = String.Join("", stateStack.ToArray().Reverse());
+                    Cell3.Value = String.Join("", symbolStack.ToArray().Reverse());
+                    Cell4.Value = inputText;
+                    Cell6.Value = String.Join("", semanticStack.ToArray().Reverse());
+
+                    if (step[0] == 'S' && inputText[0] != '#' && inputText[0] != '$')
+                    {
+                        Cell5.Value = "移入" + step;
+                        string strnum = step.Remove(0, 1);//删除第一个字符
+                        int nextstate = Convert.ToInt32(strnum);
+                        stateStack.Push(nextstate);
+                        symbolStack.Push(inputText[0]);
+                        if ('0' <= inputText[0] && inputText[0] <= '9')
+                        {
+                            semanticStack.Push(inputText[0].ToString());
+                        }
+                        else
+                        {
+                            semanticStack.Push("-");
+                        }
+                        inputText = inputText.Remove(0, 1);
+                        
+                    }
+                    else if (step[0] == 'r')
+                    {
+                        Cell5.Value = "用" + step + "规约";
+                        string strnum = step.Remove(0, 1);//删除第一个字符
+                        int statustate = Convert.ToInt32(strnum);
+                        Project proj = Statute(statustate);
+                        for (int i = 0; i < proj.right.Length; i++)//根据规约右部的长度对状态栈和符号栈进行删除
+                        {
+                            stateStack.Pop();
+                            if (proj.right[proj.right.Length - i - 1] != '$' )
+                            {
+                                symbolStack.Pop();
+                            }
+                            else if (proj.right[proj.right.Length - i - 1] == '$')//对空的情况进行单独处理
+                            {
+                                continue;
+                            }
+                            //else
+                            //{
+                            //    MessageBox.Show("规约失败" + String.Format("{0}{1}", proj.left, proj.right)); ;
+                            //    Cell5.Value = "规约失败";
+                            //    end = true;
+                            //    break;
+                            //}
+                        }
+                        if (!end)
+                        {
+                            int gotopos;
+                            GotoPairs.TryGetValue(proj.left, out gotopos);//在goto表中找列坐标
+                            int gotonum = Convert.ToInt32(AnalysisTable.Rows[stateStack.Peek()].Cells[gotopos].Value.ToString());
+                            stateStack.Push(gotonum);
+                            symbolStack.Push(proj.left);
+                        }
+                        if (proj.right.Length > 2)
+                        {
+                            Stack<char> op = new Stack<char>();
+                            Stack<string> sym  = new Stack<string>();
+                            foreach (char i in proj.right)
+                            {
+                                if (Vt.Contains(i))
+                                {
+                                    op.Push(i);
+                                    semanticStack.Pop();
+                                }
+                                else if (Vn.Contains(i)){
+                                   sym.Push(semanticStack.Pop());
+                                }
+                            }
+                            string result = "";
+                            while (op.Count > 0)
+                            {
+                                
+                                Quaternion quat = new Quaternion(op.Pop().ToString(), sym.Pop().ToString(), sym.Pop().ToString(), result);
+                                result = quat.calculate().ToString();
+                                sym.Push(result);
+                            }
+                            semanticStack.Push(result);
+                        }
+
+                    }
+                    else if (step[0] == 'a')
+                    {
+                        Cell5.Value = "接受";
+                        end = true;
+
+                    }
+                    else
+                    {
+                        Cell5.Value = "分析失败";
+                        end = true;
+
+                    }
+
+                    stepRow.Cells.Add(Cell1);
+                    stepRow.Cells.Add(Cell2);
+                    stepRow.Cells.Add(Cell3);
+                    stepRow.Cells.Add(Cell4);
+                    stepRow.Cells.Add(Cell5);
+                    stepRow.Cells.Add(Cell6);
+                    StepTable.Rows.Add(stepRow);
+
+                }
+                else
+                {
+                    MessageBox.Show("....");
+                    break;
+                }
+                if (end)
+                {
+                    break;
+                }
+                //if (Vn.Contains(symbolStack.Peek()))//Goto表中的操作
+                //{
 
 
+                //}
+            }
+
+            Vt.Remove('#');
+            Vt.Remove('$');
+        }
         private Project Statute(int num)//寻找规约句子的函数
         {
             Project proj = new Project();
@@ -1221,8 +1407,7 @@ namespace test
             return proj;
         }
 
-
-
+       
     }
 
     class Projects
@@ -1263,5 +1448,34 @@ namespace test
     {
         public int num = -1;
         public char symbol;
+    }
+
+    class Quaternion
+    {
+        public string _operator;
+        public string _para1; 
+        public string _para2; 
+        public string _result;
+
+        public Quaternion(string _operator, string _para1, string _para2, string _result)
+        {
+            this._operator = _operator;
+            this._para1 = _para1;
+            this._para2 = _para2;
+            this._result = _result;
+        }
+        public int calculate()
+        {
+            string express = _para1 + _operator + _para2;
+            return (int)Eval(express);
+        }
+
+        //[Obsolete]
+        public static object Eval(string s)
+        {
+            VsaEngine v = new VsaEngine();
+            v.InitVsaEngine("", new BaseVsaSite());
+            return Microsoft.JScript.Eval.JScriptEvaluate(s, v);
+        }
     }
 }

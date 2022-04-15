@@ -761,7 +761,7 @@ namespace test
                 { 
                 
                     char stackhead = AnalysisStack.Peek();//判断分析栈的栈顶符号为何种情况
-                    if (Vn.Contains(stackhead))//如果栈顶符号为终结符
+                    if (Vn.Contains(stackhead))//如果栈顶符号为非终结符
                     {
                         int pos;
                         GrammarPairs.TryGetValue(stackhead, out pos);
