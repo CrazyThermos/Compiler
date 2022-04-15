@@ -29,20 +29,34 @@ namespace test
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.StateInfo = new System.Windows.Forms.DataGridView();
+            this.StateNum = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ProjectSet = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.AnalysisTable = new System.Windows.Forms.DataGridView();
+            this.state = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.StepTable = new System.Windows.Forms.DataGridView();
+            this.Step = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.StateStack = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.SymbolStack = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.InputSet = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Production = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.button7 = new System.Windows.Forms.Button();
@@ -56,20 +70,6 @@ namespace test
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.Step = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.StateStack = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.SymbolStack = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.InputSet = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Production = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.state = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.StateNum = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ProjectSet = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.StateInfo)).BeginInit();
@@ -115,14 +115,14 @@ namespace test
             this.StateInfo.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.DisplayedCells;
             this.StateInfo.BackgroundColor = System.Drawing.SystemColors.ButtonHighlight;
             this.StateInfo.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.StateInfo.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.StateInfo.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
             this.StateInfo.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.StateInfo.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.StateNum,
@@ -135,6 +135,26 @@ namespace test
             this.StateInfo.RowTemplate.Height = 27;
             this.StateInfo.Size = new System.Drawing.Size(348, 315);
             this.StateInfo.TabIndex = 0;
+            // 
+            // StateNum
+            // 
+            this.StateNum.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.ColumnHeader;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.StateNum.DefaultCellStyle = dataGridViewCellStyle8;
+            this.StateNum.HeaderText = "状态编号";
+            this.StateNum.MinimumWidth = 6;
+            this.StateNum.Name = "StateNum";
+            this.StateNum.ReadOnly = true;
+            this.StateNum.Width = 96;
+            // 
+            // ProjectSet
+            // 
+            this.ProjectSet.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.ProjectSet.HeaderText = "项目集";
+            this.ProjectSet.MinimumWidth = 6;
+            this.ProjectSet.Name = "ProjectSet";
+            this.ProjectSet.ReadOnly = true;
+            this.ProjectSet.Width = 81;
             // 
             // groupBox3
             // 
@@ -154,14 +174,14 @@ namespace test
             this.AnalysisTable.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.AnalysisTable.BackgroundColor = System.Drawing.SystemColors.ButtonHighlight;
             this.AnalysisTable.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.AnalysisTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle9.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.AnalysisTable.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle9;
             this.AnalysisTable.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.AnalysisTable.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.state,
@@ -179,6 +199,59 @@ namespace test
             this.AnalysisTable.RowTemplate.Height = 27;
             this.AnalysisTable.Size = new System.Drawing.Size(524, 315);
             this.AnalysisTable.TabIndex = 1;
+            // 
+            // state
+            // 
+            this.state.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.ColumnHeader;
+            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.state.DefaultCellStyle = dataGridViewCellStyle10;
+            this.state.HeaderText = "状态";
+            this.state.MinimumWidth = 6;
+            this.state.Name = "state";
+            this.state.ReadOnly = true;
+            this.state.Width = 66;
+            // 
+            // Column1
+            // 
+            this.Column1.HeaderText = "a";
+            this.Column1.MinimumWidth = 6;
+            this.Column1.Name = "Column1";
+            this.Column1.ReadOnly = true;
+            // 
+            // Column2
+            // 
+            this.Column2.HeaderText = "b";
+            this.Column2.MinimumWidth = 6;
+            this.Column2.Name = "Column2";
+            this.Column2.ReadOnly = true;
+            // 
+            // Column3
+            // 
+            this.Column3.HeaderText = "c";
+            this.Column3.MinimumWidth = 6;
+            this.Column3.Name = "Column3";
+            this.Column3.ReadOnly = true;
+            // 
+            // Column4
+            // 
+            this.Column4.HeaderText = "d";
+            this.Column4.MinimumWidth = 6;
+            this.Column4.Name = "Column4";
+            this.Column4.ReadOnly = true;
+            // 
+            // Column5
+            // 
+            this.Column5.HeaderText = "#";
+            this.Column5.MinimumWidth = 6;
+            this.Column5.Name = "Column5";
+            this.Column5.ReadOnly = true;
+            // 
+            // Column6
+            // 
+            this.Column6.HeaderText = "E";
+            this.Column6.MinimumWidth = 6;
+            this.Column6.Name = "Column6";
+            this.Column6.ReadOnly = true;
             // 
             // groupBox4
             // 
@@ -214,6 +287,47 @@ namespace test
             this.StepTable.Size = new System.Drawing.Size(892, 293);
             this.StepTable.TabIndex = 0;
             // 
+            // Step
+            // 
+            this.Step.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.ColumnHeader;
+            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.Step.DefaultCellStyle = dataGridViewCellStyle11;
+            this.Step.HeaderText = "步骤";
+            this.Step.MinimumWidth = 6;
+            this.Step.Name = "Step";
+            this.Step.ReadOnly = true;
+            this.Step.Width = 66;
+            // 
+            // StateStack
+            // 
+            this.StateStack.HeaderText = "状态栈";
+            this.StateStack.MinimumWidth = 6;
+            this.StateStack.Name = "StateStack";
+            this.StateStack.ReadOnly = true;
+            // 
+            // SymbolStack
+            // 
+            this.SymbolStack.HeaderText = "符号栈";
+            this.SymbolStack.MinimumWidth = 6;
+            this.SymbolStack.Name = "SymbolStack";
+            this.SymbolStack.ReadOnly = true;
+            // 
+            // InputSet
+            // 
+            dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            this.InputSet.DefaultCellStyle = dataGridViewCellStyle12;
+            this.InputSet.HeaderText = "输入串";
+            this.InputSet.MinimumWidth = 6;
+            this.InputSet.Name = "InputSet";
+            this.InputSet.ReadOnly = true;
+            // 
+            // Production
+            // 
+            this.Production.HeaderText = "所用产生式";
+            this.Production.MinimumWidth = 6;
+            this.Production.Name = "Production";
+            this.Production.ReadOnly = true;
+            // 
             // textBox1
             // 
             this.textBox1.Location = new System.Drawing.Point(369, 423);
@@ -237,8 +351,9 @@ namespace test
             this.button7.Name = "button7";
             this.button7.Size = new System.Drawing.Size(100, 26);
             this.button7.TabIndex = 15;
-            this.button7.Text = "单步显示";
+            this.button7.Text = "语法制导";
             this.button7.UseVisualStyleBackColor = true;
+            this.button7.Click += new System.EventHandler(this.button7_Click);
             // 
             // button6
             // 
@@ -326,120 +441,6 @@ namespace test
             this.label2.TabIndex = 22;
             this.label2.Text = "选择分析方式";
             // 
-            // Step
-            // 
-            this.Step.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.ColumnHeader;
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.Step.DefaultCellStyle = dataGridViewCellStyle5;
-            this.Step.HeaderText = "步骤";
-            this.Step.MinimumWidth = 6;
-            this.Step.Name = "Step";
-            this.Step.ReadOnly = true;
-            this.Step.Width = 66;
-            // 
-            // StateStack
-            // 
-            this.StateStack.HeaderText = "状态栈";
-            this.StateStack.MinimumWidth = 6;
-            this.StateStack.Name = "StateStack";
-            this.StateStack.ReadOnly = true;
-            // 
-            // SymbolStack
-            // 
-            this.SymbolStack.HeaderText = "符号栈";
-            this.SymbolStack.MinimumWidth = 6;
-            this.SymbolStack.Name = "SymbolStack";
-            this.SymbolStack.ReadOnly = true;
-            // 
-            // InputSet
-            // 
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            this.InputSet.DefaultCellStyle = dataGridViewCellStyle6;
-            this.InputSet.HeaderText = "输入串";
-            this.InputSet.MinimumWidth = 6;
-            this.InputSet.Name = "InputSet";
-            this.InputSet.ReadOnly = true;
-            // 
-            // Production
-            // 
-            this.Production.HeaderText = "所用产生式";
-            this.Production.MinimumWidth = 6;
-            this.Production.Name = "Production";
-            this.Production.ReadOnly = true;
-            // 
-            // state
-            // 
-            this.state.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.ColumnHeader;
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.state.DefaultCellStyle = dataGridViewCellStyle4;
-            this.state.HeaderText = "状态";
-            this.state.MinimumWidth = 6;
-            this.state.Name = "state";
-            this.state.ReadOnly = true;
-            this.state.Width = 66;
-            // 
-            // Column1
-            // 
-            this.Column1.HeaderText = "a";
-            this.Column1.MinimumWidth = 6;
-            this.Column1.Name = "Column1";
-            this.Column1.ReadOnly = true;
-            // 
-            // Column2
-            // 
-            this.Column2.HeaderText = "b";
-            this.Column2.MinimumWidth = 6;
-            this.Column2.Name = "Column2";
-            this.Column2.ReadOnly = true;
-            // 
-            // Column3
-            // 
-            this.Column3.HeaderText = "c";
-            this.Column3.MinimumWidth = 6;
-            this.Column3.Name = "Column3";
-            this.Column3.ReadOnly = true;
-            // 
-            // Column4
-            // 
-            this.Column4.HeaderText = "d";
-            this.Column4.MinimumWidth = 6;
-            this.Column4.Name = "Column4";
-            this.Column4.ReadOnly = true;
-            // 
-            // Column5
-            // 
-            this.Column5.HeaderText = "#";
-            this.Column5.MinimumWidth = 6;
-            this.Column5.Name = "Column5";
-            this.Column5.ReadOnly = true;
-            // 
-            // Column6
-            // 
-            this.Column6.HeaderText = "E";
-            this.Column6.MinimumWidth = 6;
-            this.Column6.Name = "Column6";
-            this.Column6.ReadOnly = true;
-            // 
-            // StateNum
-            // 
-            this.StateNum.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.ColumnHeader;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.StateNum.DefaultCellStyle = dataGridViewCellStyle2;
-            this.StateNum.HeaderText = "状态编号";
-            this.StateNum.MinimumWidth = 6;
-            this.StateNum.Name = "StateNum";
-            this.StateNum.ReadOnly = true;
-            this.StateNum.Width = 96;
-            // 
-            // ProjectSet
-            // 
-            this.ProjectSet.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
-            this.ProjectSet.HeaderText = "项目集";
-            this.ProjectSet.MinimumWidth = 6;
-            this.ProjectSet.Name = "ProjectSet";
-            this.ProjectSet.ReadOnly = true;
-            this.ProjectSet.Width = 81;
-            // 
             // Form4
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -461,7 +462,7 @@ namespace test
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Name = "Form4";
-            this.Text = "LR(1)分析";
+            this.Text = "LR分析";
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.StateInfo)).EndInit();
